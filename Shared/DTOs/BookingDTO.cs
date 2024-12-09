@@ -24,5 +24,8 @@ public class BookingDTO
 
     [Required(ErrorMessage = "Planned Return DateTime is required.")]
     public DateTime PlannedReturn { get; set; }
+
+    [StringLength(1000, ErrorMessage ="Comment cannot exceed 1000 characters")]
+    public string Comment { get; set; }
 }
 
