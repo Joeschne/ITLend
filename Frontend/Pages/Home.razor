@@ -25,8 +25,8 @@
                         <p class="text-danger mb-1">Damage: @laptop.DamageDescription</p>
                     }
                 </div>
-                <span class="badge @(laptop.AvailabilityStatus ? "bg-success" : "bg-danger")">
-                    @(laptop.AvailabilityStatus ? "Verfügbar" : "Ausgeliehen")
+                <span class="badge @(laptop.IsAvailable ? "bg-success" : "bg-danger")">
+                    @(laptop.IsAvailable ? "Verfügbar" : "Ausgeliehen")
                 </span>
             </li>
         }
@@ -37,9 +37,9 @@
     // List of laptops
     private List<LaptopDTO> Laptops = new List<LaptopDTO>
     {
-        new LaptopDTO { Id = 1, Model = "Dell XPS 15", SerialNumber = "12345-ABC", AvailabilityStatus = true },
-        new LaptopDTO { Id = 2, Model = "MacBook Pro 16", SerialNumber = "67890-XYZ", AvailabilityStatus = false, DamageDescription = "Cracked screen" },
-        new LaptopDTO { Id = 3, Model = "Lenovo ThinkPad X1", SerialNumber = "54321-DEF", AvailabilityStatus = true }
+        new LaptopDTO { Id = 1, Model = "Dell XPS 15", SerialNumber = "12345-ABC", IsAvailable = true },
+        new LaptopDTO { Id = 2, Model = "MacBook Pro 16", SerialNumber = "67890-XYZ", IsAvailable = false, DamageDescription = "Cracked screen" },
+        new LaptopDTO { Id = 3, Model = "Lenovo ThinkPad X1", SerialNumber = "54321-DEF", IsAvailable = true }
     };
 
     private string username = "";

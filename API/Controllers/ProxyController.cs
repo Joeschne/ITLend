@@ -16,15 +16,15 @@ public class ProxyController : ControllerBase
     [HttpGet("studentdata")]
     public async Task<IActionResult> GetStudentData([FromQuery] string username)
     {
-        var apiUrl = $"https://europe-west6-gibz-app.cloudfunctions.net/Centerboard_GetStudentPersonData?username={Uri.EscapeDataString(username)}";
+        string apiUrl = $"https://europe-west6-gibz-app.cloudfunctions.net/Centerboard_GetStudentPersonData?username={Uri.EscapeDataString(username)}";
         Console.WriteLine($"Fetching data from: {apiUrl}");
 
         try
         {
-            var response = await _httpClient.GetAsync(apiUrl);
+            HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
             Console.WriteLine($"Response Status Code: {response.StatusCode}");
 
-            var content = await response.Content.ReadAsStringAsync();
+            string content = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Response Content: {content}");
 
             response.EnsureSuccessStatusCode();
