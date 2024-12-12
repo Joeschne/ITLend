@@ -1,6 +1,8 @@
 ﻿using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.DTOs;
 
 namespace API.Controllers;
 
@@ -18,7 +20,7 @@ public class StudentController : ControllerBase
     /// <summary>
     /// Gets the list of all students with optional search functionality.
     /// </summary>
-    /// <param name="search">Optional search term to filter students by FirstName, LastName, or Username.</param>
+    /// <param name="search">Optional search term to filter students by Username.</param>
     /// <returns>A list of student DTOs.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StudentDTO>>> GetStudents(
@@ -29,11 +31,11 @@ public class StudentController : ControllerBase
         if (!string.IsNullOrEmpty(search))
         {
             search = search.ToLower(); 
-            query = query.Where(t => t.Username.ToLower().Contains(search)); 
+            query = query.Where(s => s.Username.ToLower().Contains(search)); 
         }
 
-        var students = await query
-            .Select(student => MapToDTO(student))
+        List<StudentDTO> students = await query
+            .Select(student => MappingService.MapToStudentDTO(student))
             .ToListAsync();
 
         return Ok(students);
@@ -44,18 +46,23 @@ public class StudentController : ControllerBase
     /// Gets a specific student by ID.
     /// </summary>
     /// <param name="id">The ID of the student to retrieve.</param>
-    /// <returns>The student DTO if found, or a NotFound response.</returns>
+    /// <returns>The detailed StudentDTO (including a list of bookings) if found, or a NotFound response.</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<StudentDTO>> GetStudent(int id)
     {
-        Student? student = await _context.Students.FindAsync(id);
+        Student? student = await _context.Students
+            .Include(s => s.Bookings)
+                .ThenInclude(b => b.Laptop)
+            .Include(s => s.Bookings)
+                .ThenInclude(b => b.Teacher)
+            .FirstOrDefaultAsync(s => s.Id == id);
 
         if (student == null)
         {
             return NotFound();
         }
 
-        return Ok(MapToDTO(student));
+        return Ok(MappingService.MapToStudentDetailDTO(student));
     }
 
     /// <summary>
@@ -66,16 +73,12 @@ public class StudentController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<StudentDTO>> PostStudent(StudentDTO studentDTO)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
 
-        Student student = MapToModel(studentDTO);
+        Student student = MappingService.MapToStudentModel(studentDTO);
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, MapToDTO(student));
+        return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, MappingService.MapToStudentDTO(student));
     }
 
     /// <summary>
@@ -90,11 +93,6 @@ public class StudentController : ControllerBase
         if (id != studentDTO.Id)
         {
             return BadRequest("ID mismatch.");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
         }
 
         Student? student = await _context.Students.FindAsync(id);
@@ -146,41 +144,9 @@ public class StudentController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Checks if a student exists by ID.
-    /// </summary>
-    /// <param name="id">The ID of the student to check.</param>
-    /// <returns>True if the student exists, otherwise false.</returns>
     private bool StudentExists(int id)
     {
         return _context.Students.Any(e => e.Id == id);
     }
 
-    /// <summary>
-    /// Maps a Student entity to a StudentDTO.
-    /// </summary>
-    /// <param name="student">The Student entity to map.</param>
-    /// <returns>The mapped StudentDTO.</returns>
-    private static StudentDTO MapToDTO(Student student)
-    {
-        return new StudentDTO
-        {
-            Id = student.Id,
-            Username = student.Username
-        };
-    }
-
-    /// <summary>
-    /// Maps a StudentDTO to a Student entity.
-    /// </summary>
-    /// <param name="studentDTO">The StudentDTO to map.</param>
-    /// <returns>The mapped Student entity.</returns>
-    private static Student MapToModel(StudentDTO studentDTO)
-    {
-        return new Student
-        {
-            Id = studentDTO.Id,
-            Username = studentDTO.Username
-        };
-    }
 }

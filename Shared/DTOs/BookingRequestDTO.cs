@@ -2,7 +2,7 @@
 
 namespace Shared.DTOs;
 
-public class BookingDTO
+public class BookingRequestDTO
 {
     public int Id { get; set; }
 
