@@ -7,7 +7,7 @@ public class LaptopDTO
     public int Id { get; set; }
 
     [Required(ErrorMessage = "Availability Status is required.")]
-    public bool AvailabilityStatus { get; set; }
+    public bool IsAvailable { get; set; }
 
     [Required(ErrorMessage = "Model is required.")]
     [StringLength(100, ErrorMessage = "Model cannot exceed 100 characters.")]
