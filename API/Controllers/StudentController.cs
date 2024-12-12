@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace API.Controllers
 {
@@ -20,18 +21,32 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Gets the list of all students.
+        /// Gets the list of all students with optional search functionality.
         /// </summary>
+        /// <param name="search">Optional search term to filter students by FirstName, LastName, or Username.</param>
         /// <returns>A list of student DTOs.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StudentDTO>>> GetStudents()
+        public async Task<ActionResult<IEnumerable<StudentDTO>>> GetStudents(
+            [FromQuery] string? search = null)
         {
-            List<StudentDTO> students = await _context.Students
+            IQueryable<Student> query = _context.Students.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.ToLower(); 
+                query = query.Where(t =>
+                    t.FirstName.ToLower().Contains(search) ||
+                    t.LastName.ToLower().Contains(search) || 
+                    t.Username.ToLower().Contains(search));  
+            }
+
+            var students = await query
                 .Select(student => MapToDTO(student))
                 .ToListAsync();
 
             return Ok(students);
         }
+
 
         /// <summary>
         /// Gets a specific student by ID.
