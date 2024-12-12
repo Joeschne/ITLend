@@ -1,4 +1,5 @@
 ﻿using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.DTOs;
@@ -24,7 +25,7 @@ public class LaptopController : ControllerBase
     public async Task<ActionResult<IEnumerable<LaptopDTO>>> GetLaptops()
     {
         List<LaptopDTO> laptops = await _context.Laptops
-            .Select(laptop => MapToDTO(laptop))
+            .Select(laptop => MappingService.MapToLaptopDTO(laptop))
             .ToListAsync();
 
         return Ok(laptops);
@@ -45,7 +46,7 @@ public class LaptopController : ControllerBase
             return NotFound();
         }
 
-        return Ok(MapToDTO(laptop));
+        return Ok(MappingService.MapToLaptopDTO(laptop));
     }
 
     /// <summary>
@@ -56,16 +57,12 @@ public class LaptopController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<LaptopDTO>> PostLaptop(LaptopDTO laptopDTO)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
 
-        Laptop laptop = MapToModel(laptopDTO);
+        Laptop laptop = MappingService.MapToLaptopModel(laptopDTO);
         _context.Laptops.Add(laptop);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetLaptop), new { id = laptop.Id }, MapToDTO(laptop));
+        return CreatedAtAction(nameof(GetLaptop), new { id = laptop.Id }, MappingService.MapToLaptopDTO(laptop));
     }
 
     /// <summary>
@@ -80,11 +77,6 @@ public class LaptopController : ControllerBase
         if (id != laptopDTO.Id)
         {
             return BadRequest("ID mismatch.");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
         }
 
         Laptop? laptop = await _context.Laptops.FindAsync(id);
@@ -139,47 +131,8 @@ public class LaptopController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Checks if a laptop exists by ID.
-    /// </summary>
-    /// <param name="id">The ID of the laptop to check.</param>
-    /// <returns>True if the laptop exists, otherwise false.</returns>
     private bool LaptopExists(int id)
     {
         return _context.Laptops.Any(e => e.Id == id);
-    }
-
-    /// <summary>
-    /// Maps a Laptop entity to a LaptopDTO.
-    /// </summary>
-    /// <param name="laptop">The Laptop entity to map.</param>
-    /// <returns>The mapped LaptopDTO.</returns>
-    private static LaptopDTO MapToDTO(Laptop laptop)
-    {
-        return new LaptopDTO
-        {
-            Id = laptop.Id,
-            IsAvailable = laptop.IsAvailable,
-            Model = laptop.Model,
-            IdentificationNumber = laptop.IdentificationNumber,
-            DamageDescription = laptop.DamageDescription
-        };
-    }
-
-    /// <summary>
-    /// Maps a LaptopDTO to a Laptop entity.
-    /// </summary>
-    /// <param name="laptopDTO">The LaptopDTO to map.</param>
-    /// <returns>The mapped Laptop entity.</returns>
-    private static Laptop MapToModel(LaptopDTO laptopDTO)
-    {
-        return new Laptop
-        {
-            Id = laptopDTO.Id,
-            IsAvailable = laptopDTO.IsAvailable,
-            Model = laptopDTO.Model,
-            IdentificationNumber = laptopDTO.IdentificationNumber,
-            DamageDescription = laptopDTO.DamageDescription
-        };
     }
 }

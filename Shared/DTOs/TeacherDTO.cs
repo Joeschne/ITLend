@@ -2,7 +2,7 @@
 
 namespace Shared.DTOs;
 
-internal class TeacherDTO
+public class TeacherDTO
 {
     public int Id { get; set; }
     [Required(ErrorMessage = "Email is required")]
