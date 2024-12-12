@@ -3,14 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API.Models;
 
-[Index(nameof(SerialNumber), IsUnique = true)]
+[Index(nameof(IdentificationNumber), IsUnique = true)]
 public class Laptop
 {
-    [Key]
     public int Id { get; set; }
 
     [Required]
-    public bool AvailabilityStatus { get; set; }
+    public bool IsAvailable { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -18,7 +17,7 @@ public class Laptop
 
     [Required]
     [MaxLength(50)]
-    public string SerialNumber { get; set; }
+    public string IdentificationNumber { get; set; }
 
     [MaxLength(1000)]
     public string? DamageDescription { get; set; }

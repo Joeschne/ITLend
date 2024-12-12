@@ -10,10 +10,11 @@ public class BookingDTO
     [StringLength(50, ErrorMessage = "Student Username cannot exceed 50 characters.")]
     public string StudentUsername { get; set; }
 
-    [Required(ErrorMessage = "Laptop Id is required.")]
-    public int LaptopId { get; set; }
+    [Required(ErrorMessage = "Laptop IdentificationNumber is required.")]
+    public string LaptopIdentificationNumber { get; set; }
 
-    [StringLength(50, ErrorMessage = "Teacher Username cannot exceed 50 characters.")]
+    [StringLength(320, ErrorMessage = "Teacher email cannot exceed 50 characters.")]
+    [EmailAddress]
     public string? TeacherEmail { get; set; } // Nullable for optional teacher assignments.
 
     [Required(ErrorMessage = "Returned status is required.")]

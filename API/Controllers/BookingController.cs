@@ -2,10 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace API.Controllers;
 
@@ -63,12 +59,18 @@ public class BookingController : ControllerBase
         int? studentId = await GetStudentIdFromDatabase(bookingDTO.StudentUsername);
         if (studentId == null) return BadRequest($"Invalid username: '{bookingDTO.StudentUsername}' not found.");
 
+        int? laptopId = await GetLaptopIdFromDatabase(bookingDTO.LaptopIdentificationNumber);
+        if (laptopId == null) return BadRequest($"Invalid laptop: '{bookingDTO.LaptopIdentificationNumber}' not found.");
+
+        int? teacherId = await GetLaptopIdFromDatabase(bookingDTO.TeacherEmail);
+        if (teacherId == null) return BadRequest($"Invalid teacher: '{bookingDTO.TeacherEmail}' not found.");
+
         Booking booking = new()
         {
             Id = bookingDTO.Id,
             StudentId = studentId.Value,
-            LaptopId = bookingDTO.LaptopId,
-            TeacherUsername = bookingDTO.TeacherUsername,
+            LaptopId = laptopId.Value,
+            TeacherId = teacherId,
             Returned = bookingDTO.Returned,
             BookingDateTime = bookingDTO.BookingDateTime,
             PlannedReturn = bookingDTO.PlannedReturn,
@@ -97,6 +99,12 @@ public class BookingController : ControllerBase
         int? studentId = await GetStudentIdFromDatabase(bookingDTO.StudentUsername);
         if (studentId == null) return BadRequest($"Invalid username: '{bookingDTO.StudentUsername}' not found.");
 
+        int? laptopId = await GetLaptopIdFromDatabase(bookingDTO.LaptopIdentificationNumber);
+        if (laptopId == null) return BadRequest($"Invalid laptop: '{bookingDTO.LaptopIdentificationNumber}' not found.");
+
+        int? teacherId = await GetLaptopIdFromDatabase(bookingDTO.TeacherEmail);
+        if (teacherId == null) return BadRequest($"Invalid teacher: '{bookingDTO.TeacherEmail}' not found.");
+
         Booking? booking = await _context.Bookings.FindAsync(id);
         if (booking == null)
         {
@@ -104,8 +112,8 @@ public class BookingController : ControllerBase
         }
 
         booking.StudentId = studentId.Value;
-        booking.LaptopId = bookingDTO.LaptopId;
-        booking.TeacherUsername = bookingDTO.TeacherUsername;
+        booking.LaptopId = laptopId.Value;
+        booking.TeacherId = teacherId;
         booking.Returned = bookingDTO.Returned;
         booking.BookingDateTime = bookingDTO.BookingDateTime;
         booking.PlannedReturn = bookingDTO.PlannedReturn;
@@ -160,8 +168,8 @@ public class BookingController : ControllerBase
         {
             Id = booking.Id,
             StudentUsername = booking.Student.Username,
-            LaptopId = booking.LaptopId,
-            TeacherUsername = booking.TeacherUsername,
+            LaptopIdentificationNumber = booking.Laptop.IdentificationNumber,
+            TeacherEmail = booking.Teacher.Email,
             Returned = booking.Returned,
             BookingDateTime = booking.BookingDateTime,
             PlannedReturn = booking.PlannedReturn,
@@ -171,9 +179,25 @@ public class BookingController : ControllerBase
 
     private async Task<int?> GetStudentIdFromDatabase(string studentUsername)
     {
-        Student? studentId = await _context.Students
+        Student? student = await _context.Students
         .FirstOrDefaultAsync(s => s.Username.ToLower() == studentUsername);
 
-        return studentId?.Id;
+        return student?.Id;
+    }
+
+    private async Task<int?> GetLaptopIdFromDatabase(string laptopIdentificationNumber)
+    {
+        Laptop? laptop = await _context.Laptops
+        .FirstOrDefaultAsync(l => l.IdentificationNumber.ToLower() == laptopIdentificationNumber);
+
+        return laptop?.Id;
+    }
+
+    private async Task<int?> GetTeacherIdFromDatabase(string teacherEmail)
+    {
+        Teacher? teacher = await _context.Teachers
+        .FirstOrDefaultAsync(t => t.Email.ToLower() == teacherEmail);
+
+        return teacher?.Id;
     }
 }
