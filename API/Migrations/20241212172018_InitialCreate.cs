@@ -21,10 +21,10 @@ namespace API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    AvailabilityStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Model = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    SerialNumber = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                    IdentificationNumber = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     DamageDescription = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -42,21 +42,26 @@ namespace API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Username = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    FirstName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    LastName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Email = table.Column<string>(type: "varchar(320)", maxLength: 320, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    MobilePhoneNumber = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Gender = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Students", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Teachers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Email = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Teachers", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -68,8 +73,7 @@ namespace API.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     LaptopId = table.Column<int>(type: "int", nullable: false),
-                    TeacherUsername = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TeacherId = table.Column<int>(type: "int", nullable: true),
                     Returned = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     BookingDateTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     PlannedReturn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -91,6 +95,11 @@ namespace API.Migrations
                         principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Teachers_TeacherId",
+                        column: x => x.TeacherId,
+                        principalTable: "Teachers",
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -105,15 +114,26 @@ namespace API.Migrations
                 column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Laptops_SerialNumber",
+                name: "IX_Bookings_TeacherId",
+                table: "Bookings",
+                column: "TeacherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Laptops_IdentificationNumber",
                 table: "Laptops",
-                column: "SerialNumber",
+                column: "IdentificationNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_Username",
                 table: "Students",
                 column: "Username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Teachers_Email",
+                table: "Teachers",
+                column: "Email",
                 unique: true);
         }
 
@@ -128,6 +148,9 @@ namespace API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Students");
+
+            migrationBuilder.DropTable(
+                name: "Teachers");
         }
     }
 }

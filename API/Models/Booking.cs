@@ -14,8 +14,8 @@ public class Booking
     public int LaptopId { get; set; }
     public Laptop Laptop { get; set; }
 
-    [MaxLength(50)]
-    public string? TeacherUsername { get; set; }
+    public int? TeacherId { get; set; }
+    public Teacher Teacher { get; set; }
 
     [Required]
     public bool Returned { get; set; }

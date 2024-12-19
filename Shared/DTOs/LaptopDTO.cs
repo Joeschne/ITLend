@@ -15,7 +15,7 @@ public class LaptopDTO
 
     [Required(ErrorMessage = "Serial Number is required.")]
     [StringLength(50, ErrorMessage = "Serial Number cannot exceed 50 characters.")]
-    public string SerialNumber { get; set; }
+    public string IdentificationNumber { get; set; }
 
     [StringLength(1000, ErrorMessage = "Damage Description cannot exceed 250 characters.")]
     public string? DamageDescription { get; set; }
