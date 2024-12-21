@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using API.Models;
+using API.Services;
 
 namespace API;
 
@@ -31,6 +32,8 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHttpClient();
+
+        builder.Services.AddSingleton<IEmailService, EmailService>();
 
 
         WebApplication app = builder.Build();

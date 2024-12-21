@@ -143,6 +143,32 @@ public class TeacherController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("send-email")]
+    public async Task<IActionResult> SendEmail([FromBody] EmailRequest request, [FromServices] IEmailService emailService)
+    {
+        if (string.IsNullOrWhiteSpace(request.RecipientEmail) || string.IsNullOrWhiteSpace(request.Message))
+        {
+            return BadRequest("Recipient email and message cannot be empty.");
+        }
+
+        try
+        {
+            await emailService.SendEmailAsync(request.RecipientEmail, "Rückgabe des Notebooks", request.Message);
+            return Ok("Email sent successfully.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error sending email: {ex.Message}");
+        }
+    }
+
+    public class EmailRequest
+    {
+        public string RecipientEmail { get; set; }
+        public string Message { get; set; }
+    }
+
+
     private bool TeacherExists(int id)
     {
         return _context.Teachers.Any(e => e.Id == id);
