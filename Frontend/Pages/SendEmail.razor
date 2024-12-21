@@ -1,0 +1,75 @@
+﻿@page "/send-email"
+@using System.Net.Http.Json
+@using Shared.DTOs
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Send Email to Teacher</h3>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <!-- Autocomplete field -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Lehrer-E-Mail</label>
+                <input type="text"
+                       id="email"
+                       class="form-control"
+                       placeholder="E-Mail des Lehrers eingeben..."
+                       @bind="searchTerm"
+                       @oninput="SearchTeachers"
+                       list="teacherEmails" />
+                <datalist id="teacherEmails">
+                    @foreach (var email in filteredEmails)
+                    {
+                        <option value="@email"></option>
+                    }
+                </datalist>
+            </div>
+
+            <!-- Field with predefined text-->
+            <div class="mb-3">
+                <label for="message" class="form-label">Nachricht</label>
+                <textarea id="message"
+                          class="form-control"
+                          rows="5"
+                          @bind="emailMessage"></textarea>
+            </div>
+
+            <!-- Send button -->
+            <div class="d-grid">
+                <button class="btn btn-primary" @onclick="SendEmails">
+                    <i class="bi bi-envelope"></i> Senden
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchTerm = string.Empty;
+    private List<string> filteredEmails = new();
+    private string emailMessage = "Bitte nehmen Sie das Notebook von dem Schüler entgegen.";
+
+    private async Task SearchTeachers()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredEmails.Clear();
+            return;
+        }
+
+        var response = await Http.GetFromJsonAsync<List<TeacherDTO>>($"/api/Teacher?search={searchTerm}");
+        filteredEmails = response?.Select(t => t.Email).ToList() ?? new List<string>();
+    }
+
+    private void SendEmails()
+    {
+        // For now, we're just outputting a message to the console
+        Console.WriteLine($"Email: {searchTerm}");
+        Console.WriteLine($"Message: {emailMessage}");
+    }
+
+}
