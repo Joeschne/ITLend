@@ -17,8 +17,7 @@
                        id="email"
                        class="form-control"
                        placeholder="E-Mail des Lehrers eingeben..."
-                       @bind="searchTerm"
-                       @oninput="SearchTeachers"
+                       @oninput="e => { searchTerm = e.Value.ToString(); SearchTeachers(); }"
                        list="teacherEmails" />
                 <datalist id="teacherEmails">
                     @foreach (var email in filteredEmails)
