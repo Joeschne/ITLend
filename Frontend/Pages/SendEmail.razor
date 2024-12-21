@@ -7,9 +7,17 @@
 <div class="container mt-4">
     <h3 class="text-center mb-4">Send Email to Teacher</h3>
 
+    <!-- Alert -->
+    @if (!string.IsNullOrEmpty(alertMessage))
+    {
+        <div class="alert @alertClass alert-dismissible fade show" role="alert">
+            @alertMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <!-- Autocomplete field -->
             <div class="mb-3">
                 <label for="email" class="form-label">Lehrer-E-Mail</label>
@@ -27,7 +35,7 @@
                 </datalist>
             </div>
 
-            <!-- Field with predefined text-->
+            <!-- Field with predefined text -->
             <div class="mb-3">
                 <label for="message" class="form-label">Nachricht</label>
                 <textarea id="message"
@@ -42,15 +50,17 @@
                     <i class="bi bi-envelope"></i> Senden
                 </button>
             </div>
-
         </div>
     </div>
 </div>
+
 
 @code {
     private string searchTerm = string.Empty;
     private List<string> filteredEmails = new();
     private string emailMessage = "Bitte nehmen Sie das Notebook von dem Schüler entgegen.";
+    private string alertMessage = string.Empty;
+    private string alertClass = string.Empty; 
 
     private async Task SearchTeachers()
     {
@@ -68,7 +78,7 @@
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
-            Console.WriteLine("Email is empty");
+            SetAlert("Please enter an email address!", "alert-danger");
             return;
         }
 
@@ -84,18 +94,29 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Email erfolgreich gesendet.");
+                SetAlert("Email sent successfully!", "alert-success");
             }
             else
             {
-                Console.WriteLine("Fehler beim Senden der E-Mail.");
+                SetAlert("Failed to send email. Please try again later.", "alert-danger");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fehler: {ex.Message}");
+            SetAlert($"Error: {ex.Message}", "alert-danger");
         }
     }
 
+    private void SetAlert(string message, string cssClass)
+    {
+        alertMessage = message;
+        alertClass = cssClass;
 
+        // Remove the notification after 5 seconds 
+        _ = Task.Delay(5000).ContinueWith(_ =>
+        {
+            alertMessage = string.Empty;
+            StateHasChanged();
+        });
+    }
 }
