@@ -65,11 +65,38 @@
         filteredEmails = response?.Select(t => t.Email).ToList() ?? new List<string>();
     }
 
-    private void SendEmails()
+    private async Task SendEmails()
     {
-        // For now, we're just outputting a message to the console
-        Console.WriteLine($"Email: {searchTerm}");
-        Console.WriteLine($"Message: {emailMessage}");
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            Console.WriteLine("Email is empty");
+            return;
+        }
+
+        var request = new
+        {
+            RecipientEmail = searchTerm,
+            Message = emailMessage
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/Teacher/send-email", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Email erfolgreich gesendet.");
+            }
+            else
+            {
+                Console.WriteLine("Fehler beim Senden der E-Mail.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler: {ex.Message}");
+        }
     }
+
 
 }
