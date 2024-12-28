@@ -1,59 +1,60 @@
 ﻿@using Shared.DTOs
 
-<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @if="!IsVisible">hidden</div>
-<div class="modal-dialog">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">@Username's Bookings</h5>
-            <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <p>Total Bookings: @Bookings?.Count ?? 0</p>
-
-            @if (Bookings == null || !Bookings.Any())
-            {
-                <div class="alert alert-info">
-                    No bookings found for this student.
+@if (IsVisible && StudentDetail != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@StudentDetail.Username's Bookings</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
                 </div>
-            }
-            else
-            {
-                <ul class="list-group">
-                    @foreach (var booking in Bookings)
+                <div class="modal-body">
+                    <p>Total Bookings: @StudentDetail.Bookings.Count</p>
+
+                    @if (!StudentDetail.Bookings.Any())
                     {
-                        <li class="list-group-item">
-                            <div>
-                                <strong>Booking Date:</strong> @booking.BookingDateTime.ToString("g")
-                            </div>
-                            <div>
-                                <strong>Laptop:</strong> @booking.Laptop?.IdentificationNumber ?? "Unknown"
-                            </div>
-                            @if (!string.IsNullOrEmpty(booking.Comment))
-                            {
-                                <div>
-                                    <strong>Comment:</strong> @booking.Comment
-                                </div>
-                            }
-                        </li>
+                        <div class="alert alert-info">
+                            No bookings found for this student.
+                        </div>
                     }
-                </ul>
-            }
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var booking in StudentDetail.Bookings)
+                            {
+                                <li class="list-group-item">
+                                    <div>
+                                        <strong>Booking Date:</strong> @booking.BookingDateTime.ToString("g")
+                                    </div>
+                                    <div>
+                                        <strong>Laptop:</strong> @(booking.Laptop?.IdentificationNumber ?? "Unknown")
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(booking.Comment))
+                                    {
+                                        <div>
+                                            <strong>Comment:</strong> @booking.Comment
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     [Parameter]
     public bool IsVisible { get; set; }
 
     [Parameter]
-    public string Username { get; set; }
-
-    [Parameter]
-    public List<BookingResponseDTO> Bookings { get; set; }
+    public StudentDetailDTO? StudentDetail { get; set; }
 
     [Parameter]
     public EventCallback OnClose { get; set; }

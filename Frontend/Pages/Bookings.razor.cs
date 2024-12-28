@@ -12,6 +12,8 @@ public partial class Bookings : ComponentBase
     private IEnumerable<BookingResponseDTO> bookings;
     private BookingResponseDTO selectedBooking;
     private bool showEditModal;
+    private bool showStudentModal = false;
+    private StudentDetailDTO? selectedStudentDetail;
 
     protected override async Task OnInitializedAsync()
     {
@@ -28,6 +30,27 @@ public partial class Bookings : ComponentBase
         {
             Console.Error.WriteLine($"Failed to load bookings: {ex.Message}");
         }
+    }
+
+    private async Task OpenStudentModal(string username)
+    {
+        try
+        {
+            // Fetch student details from the service
+            selectedStudentDetail = await BookingService.GetStudentBookingsAsync(username);
+            showStudentModal = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching details for student {username}: {ex.Message}");
+            selectedStudentDetail = null;
+        }
+    }
+
+    private void CloseStudentModal()
+    {
+        showStudentModal = false;
+        selectedStudentDetail = null;
     }
 
     private void EditBooking(BookingResponseDTO booking)
