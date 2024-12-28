@@ -14,8 +14,10 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7120") });
 
-        // Register BookingService
+        // Register Services
         builder.Services.AddScoped<IBookingService, BookingService>();
+        builder.Services.AddScoped<ILaptopService, LaptopService>();
+
 
 
         await builder.Build().RunAsync();

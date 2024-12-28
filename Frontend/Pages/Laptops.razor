@@ -1,0 +1,110 @@
+﻿@page "/laptops"
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h1 class="">Laptops</h1>
+        <strong>Available Laptops:</strong> @availableLaptops
+    </div>
+
+    <button class="btn btn-primary mb-3" @onclick="AddLaptop">
+        Add Laptop
+    </button>
+
+    <!-- List of Laptops -->
+    @if (laptops == null)
+    {
+        <div class="alert alert-info">Loading laptops...</div>
+    }
+    else if (!laptops.Any())
+    {
+        <div class="alert alert-warning">No laptops available.</div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var laptop in laptops)
+            {
+                <li class="list-group-item mb-2 position-relative">
+                    <!-- Availability Badge -->
+                    <span class="badge position-absolute top-0 end-0 m-2 @(laptop.IsAvailable ? "bg-success" : "bg-danger")">
+                        @(laptop.IsAvailable ? "Available" : "Not Available")
+                    </span>
+
+                    <!-- Laptop Details -->
+                    <div class="row">
+                        <!-- Model -->
+                        <div class="col-md-3">
+                            <strong>Model:</strong> @laptop.Model
+                        </div>
+
+                        <!-- Identification Number -->
+                        <div class="col-md-3">
+                            <strong>Id-Number:</strong> @laptop.IdentificationNumber
+                        </div>
+
+                        <!-- Damage Description -->
+                        <div class="col-md-4">
+                            <strong>Damage:</strong> @(string.IsNullOrEmpty(laptop.DamageDescription) ? "No damage recorded" : laptop.DamageDescription)
+                        </div>
+
+                        <!-- Edit Button -->
+                        <div class="col-md-1 text-end ">
+                            <button class="btn btn-warning btn-sm"  @onclick="() => EditLaptop(laptop)">Edit</button>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+
+    }
+
+    <!-- Laptop Modal -->
+    @if (showModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@modalTitle</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Model -->
+                        <div class="mb-3">
+                            <label class="form-label">Model</label>
+                            <input type="text" class="form-control" @bind="selectedLaptop.Model" />
+                        </div>
+
+                        <!-- Identification Number -->
+                        <div class="mb-3">
+                            <label class="form-label">Identification Number</label>
+                            <input type="text" class="form-control" @bind="selectedLaptop.IdentificationNumber" />
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="mb-3">
+                            <label class="form-label">Available</label>
+                            <input type="checkbox" class="form-check-input" id="isAvailableCheck" @bind="selectedLaptop.IsAvailable" />
+                            <label class="form-check-label" for="isAvailableCheck">Is Available</label>
+                        </div>
+
+                        <!-- Damage Description -->
+                        <div class="mb-3">
+                            <label class="form-label">Damage Description</label>
+                            <textarea class="form-control" rows="3" @bind="selectedLaptop.DamageDescription"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        @if (!isAddMode)
+                        {
+                            <button class="btn btn-danger" @onclick="DeleteLaptop">Delete</button>
+                        }
+                        <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                        <button class="btn btn-primary" @onclick="SaveLaptop">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
