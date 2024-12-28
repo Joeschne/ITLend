@@ -1,60 +1,47 @@
 ﻿@page "/"
-@using System.Net.Http.Json
+@using Frontend.Interfaces
 @using Shared.DTOs
-@inject NavigationManager Navigation
-@inject HttpClient Http
+@inject IBookingService BookingService
 
 <div class="container mt-4">
-    <h2>Laptop-Verleihliste</h2>
-
-    <div class="input-group mb-3">
-        <span class="input-group-text">Benutzername</span>
-        <InputText class="form-control" @bind-Value="username" placeholder="Enter username..." />
-        <button class="btn btn-primary" @onclick="NavigateToLoanPage">Ausleihen</button>
-    </div>
+    <h2>Open Bookings</h2>
 
     <ul class="list-group mt-4">
-        @foreach (var laptop in Laptops)
+        @if (OpenBookings == null)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Model: @laptop.Model</h5>
-                    <p class="mb-1">Serial Number: @laptop.SerialNumber</p>
-                    @if (!string.IsNullOrEmpty(laptop.DamageDescription))
-                    {
-                        <p class="text-danger mb-1">Damage: @laptop.DamageDescription</p>
-                    }
-                </div>
-                <span class="badge @(laptop.IsAvailable ? "bg-success" : "bg-danger")">
-                    @(laptop.IsAvailable ? "Verfügbar" : "Ausgeliehen")
-                </span>
-            </li>
+            <li class="list-group-item">Loading...</li>
+        }
+        else if (!OpenBookings.Any())
+        {
+            <li class="list-group-item">No open bookings found.</li>
+        }
+        else
+        {
+            @foreach (var booking in OpenBookings)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Student: @booking.StudentUsername</h5>
+                        <p class="mb-1">Laptop Model: @booking.Laptop.Model</p>
+                        <p class="mb-1">Booking Date: @booking.BookingDateTime.ToString("g")</p>
+                        <p class="mb-1">Planned Return: @booking.PlannedReturn.ToString("g")</p>
+                        @if (!string.IsNullOrEmpty(booking.Comment))
+                        {
+                            <p class="text-muted mb-1">Comment: @booking.Comment</p>
+                        }
+                    </div>
+                    <span class="badge bg-warning">Open</span>
+                </li>
+            }
         }
     </ul>
 </div>
 
 @code {
-    // List of laptops
-    private List<LaptopDTO> Laptops = new List<LaptopDTO>
-    {
-        new LaptopDTO { Id = 1, Model = "Dell XPS 15", SerialNumber = "12345-ABC", IsAvailable = true },
-        new LaptopDTO { Id = 2, Model = "MacBook Pro 16", SerialNumber = "67890-XYZ", IsAvailable = false, DamageDescription = "Cracked screen" },
-        new LaptopDTO { Id = 3, Model = "Lenovo ThinkPad X1", SerialNumber = "54321-DEF", IsAvailable = true }
-    };
+    private List<BookingResponseDTO> OpenBookings;
 
-    private string username = "";
-
-    // Navigate to the loan page with the entered username
-    private void NavigateToLoanPage()
+    protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrWhiteSpace(username))
-        {
-            Navigation.NavigateTo($"/loan/{Uri.EscapeDataString(username)}");
-        }
-        else
-        {
-            Console.WriteLine("Please enter a valid username.");
-        }
+        OpenBookings = (await BookingService.GetNotReturnedBookingsAsync()).ToList();
     }
-
 }

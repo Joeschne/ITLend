@@ -1,0 +1,147 @@
+@page "/bookings"
+
+<div class="container mt-4">
+    <h1 class="mb-4">Bookings</h1>
+
+    @if (bookings == null)
+    {
+        <div class="alert alert-info">
+            <span>Loading bookings...</span>
+        </div>
+    }
+    else if (!bookings.Any())
+    {
+        <div class="alert alert-warning">
+            <span>No bookings found.</span>
+        </div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var booking in bookings)
+            {
+                <li class="list-group-item mb-2">
+                    <div class="row">
+                        <!-- Student Username (clickable) -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Student:</strong>
+                            <a href="javascript:void(0)"
+                               @onclick="() => OnStudentClicked(booking.StudentUsername)"
+                               class="text-decoration-none">
+                                @booking.StudentUsername
+                            </a>
+                        </div>
+
+                        <!-- Laptop IdentificationNumber -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Laptop Number:</strong>
+                            @booking.Laptop?.IdentificationNumber
+                        </div>
+
+                        <!-- Teacher Email -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Teacher Email:</strong>
+                            @booking.TeacherEmail
+                        </div>
+
+                        <!-- Returned -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Returned:</strong>
+                            <span class='@(booking.Returned ? "text-sucess" : "text-danger")'>@(booking.Returned ? "Yes" : "No")</span>
+                            @* @((booking.Returned) ? "<span class='text-success'>Yes</span>" : "<span class='text-danger'>No</span>") *@
+                        </div>
+
+                        <!-- Booking DateTime -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Booking DateTime:</strong>
+                            @booking.BookingDateTime.ToString("g")
+                        </div>
+
+                        <!-- Planned Return -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Planned Return:</strong>
+                            @booking.PlannedReturn.ToString("g")
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="col-md-4 mb-2">
+                            <strong>Comment:</strong>
+                            @booking.Comment
+                        </div>
+
+                        <!-- Edit Button -->
+                        <div class="col-md-12 text-end">
+                            <button class="btn btn-primary" @onclick="() => EditBooking(booking)">
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<!-- Edit Booking Modal -->
+@if (showEditModal && selectedBooking != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Booking</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Student Username (read-only or up to you if you want it editable) -->
+                    <div class="mb-3">
+                        <label class="form-label">Student Username</label>
+                        <input type="text" class="form-control" @bind="selectedBooking.StudentUsername" readonly />
+                    </div>
+
+                    <!-- Laptop Identification Number -->
+                    <div class="mb-3">
+                        <label class="form-label">Laptop Identification Number</label>
+                        <input type="text" class="form-control" @bind="selectedBooking.Laptop.IdentificationNumber" />
+                    </div>
+
+                    <!-- Teacher Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Teacher Email</label>
+                        <input type="email" class="form-control" @bind="selectedBooking.TeacherEmail" />
+                    </div>
+
+                    <!-- Returned -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="returnedCheck" @bind="selectedBooking.Returned" />
+                        <label class="form-check-label" for="returnedCheck">
+                            Returned
+                        </label>
+                    </div>
+
+                    <!-- Booking DateTime -->
+                    <div class="mb-3">
+                        <label class="form-label">Booking DateTime</label>
+                        <input type="datetime-local" class="form-control" @bind="selectedBooking.BookingDateTime" />
+                    </div>
+
+                    <!-- Planned Return -->
+                    <div class="mb-3">
+                        <label class="form-label">Planned Return</label>
+                        <input type="datetime-local" class="form-control" @bind="selectedBooking.PlannedReturn" />
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label class="form-label">Comment</label>
+                        <textarea class="form-control" rows="3" @bind="selectedBooking.Comment"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    <button class="btn btn-primary" @onclick="SaveChanges">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

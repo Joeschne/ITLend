@@ -1,3 +1,5 @@
+using Frontend.Interfaces;
+using Frontend.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -11,6 +13,9 @@ public class Program
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7120") });
+
+        // Register BookingService
+        builder.Services.AddScoped<IBookingService, BookingService>();
 
 
         await builder.Build().RunAsync();

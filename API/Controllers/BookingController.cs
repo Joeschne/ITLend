@@ -28,6 +28,45 @@ public class BookingController : ControllerBase
             .Include(b => b.Student)
             .Include(b => b.Laptop)
             .Include(b => b.Teacher)
+            .OrderByDescending(b => b.BookingDateTime)
+            .Select(booking => MappingService.MapToBookingResponseDTO(booking))
+            .ToListAsync();
+
+        return Ok(bookings);
+    }
+
+    /// <summary>
+    /// Gets the list of bookings that are not returned yet.
+    /// </summary>
+    /// <returns>A list of booking DTOs.</returns>
+    [HttpGet("notreturned")]
+    public async Task<ActionResult<IEnumerable<BookingResponseDTO>>> GetNotReturnedBookings()
+    {
+        List<BookingResponseDTO> bookings = await _context.Bookings
+            .Include(b => b.Student)
+            .Include(b => b.Laptop)
+            .Include(b => b.Teacher)
+            .Where(b => !b.Returned)
+            .OrderByDescending(b => b.BookingDateTime)
+            .Select(booking => MappingService.MapToBookingResponseDTO(booking))
+            .ToListAsync();
+
+        return Ok(bookings);
+    }
+
+    /// <summary>
+    /// Gets the list of bookings that are returned.
+    /// </summary>
+    /// <returns>A list of booking DTOs.</returns>
+    [HttpGet("returned")]
+    public async Task<ActionResult<IEnumerable<BookingResponseDTO>>> GetReturnedBookings()
+    {
+        List<BookingResponseDTO> bookings = await _context.Bookings
+            .Include(b => b.Student)
+            .Include(b => b.Laptop)
+            .Include(b => b.Teacher)
+            .Where(b => b.Returned)
+            .OrderByDescending(b => b.BookingDateTime)
             .Select(booking => MappingService.MapToBookingResponseDTO(booking))
             .ToListAsync();
 
@@ -43,9 +82,9 @@ public class BookingController : ControllerBase
     public async Task<ActionResult<BookingResponseDTO>> GetBooking(int id)
     {
         Booking? booking = await _context.Bookings
-            .Include(b => b.Student) 
-            .Include(b => b.Laptop)  
-            .Include(b => b.Teacher) 
+            .Include(b => b.Student)
+            .Include(b => b.Laptop)
+            .Include(b => b.Teacher)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (booking == null)
@@ -136,7 +175,11 @@ public class BookingController : ControllerBase
         return NoContent();
     }
 
-
+    /// <summary>
+    /// Deletes a booking by ID.
+    /// </summary>
+    /// <param name="id">The ID of the booking to delete.</param>
+    /// <returns>No content if successful, or a NotFound response.</returns>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBooking(int id)
     {
@@ -151,7 +194,6 @@ public class BookingController : ControllerBase
 
         return NoContent();
     }
-
 
     private bool BookingExists(int id)
     {
