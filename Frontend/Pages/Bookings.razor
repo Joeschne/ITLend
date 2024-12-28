@@ -26,7 +26,7 @@
                         <div class="col-md-3 mb-2">
                             <strong>Student:</strong>
                             <a href="javascript:void(0)"
-                               @onclick="() => OnStudentClicked(booking.StudentUsername)"
+                               @onclick="() => OpenStudentModal(booking.StudentUsername)"
                                class="text-decoration-none">
                                 @booking.StudentUsername
                             </a>
@@ -47,8 +47,7 @@
                         <!-- Returned -->
                         <div class="col-md-3 mb-2">
                             <strong>Returned:</strong>
-                            <span class='@(booking.Returned ? "text-sucess" : "text-danger")'>@(booking.Returned ? "Yes" : "No")</span>
-                            @* @((booking.Returned) ? "<span class='text-success'>Yes</span>" : "<span class='text-danger'>No</span>") *@
+                            <span class='@(booking.Returned ? "text-success" : "text-danger")'>@(booking.Returned ? "Yes" : "No")</span>
                         </div>
 
                         <!-- Booking DateTime -->
@@ -81,6 +80,12 @@
         </ul>
     }
 </div>
+
+<!-- Student Bookings Modal -->
+<StudentBookingsModal IsVisible="@showStudentModal"
+                      Username="@selectedStudentUsername"
+                      Bookings="@selectedStudentBookings"
+                      OnClose="CloseStudentModal" />
 
 <!-- Edit Booking Modal -->
 @if (showEditModal && selectedBooking != null)

@@ -74,6 +74,40 @@ public class BookingController : ControllerBase
     }
 
     /// <summary>
+    /// Gets the list of bookings for a specific student by username.
+    /// </summary>
+    /// <param name="username">The username of the student.</param>
+    /// <returns>A list of booking DTOs for the specified student, or NotFound if none are found.</returns>
+    [HttpGet("by-student/{username}")]
+    public async Task<ActionResult<IEnumerable<BookingResponseDTO>>> GetBookingsByStudent(string username)
+    {
+        try
+        {
+            List<BookingResponseDTO> bookings = await _context.Bookings
+                .Include(b => b.Student)
+                .Include(b => b.Laptop)
+                .Include(b => b.Teacher)
+                .Where(b => b.Student.Username == username)
+                .OrderByDescending(b => b.BookingDateTime)
+                .Select(booking => MappingService.MapToBookingResponseDTO(booking))
+                .ToListAsync();
+
+            if (!bookings.Any())
+            {
+                return NotFound($"No bookings found for student with username: {username}");
+            }
+
+            return Ok(bookings);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while retrieving bookings. Error: {ex.Message}");
+        }
+    }
+
+
+
+    /// <summary>
     /// Gets a specific booking by ID.
     /// </summary>
     /// <param name="id">The ID of the booking to retrieve.</param>

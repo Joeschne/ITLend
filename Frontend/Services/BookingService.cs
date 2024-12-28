@@ -57,6 +57,29 @@ public class BookingService : IBookingService
         }
     }
 
+    public async Task<StudentDetailDTO> GetStudentBookingsAsync(string username)
+    {
+        try
+        {
+            var bookings = await _httpClient.GetFromJsonAsync<List<BookingResponseDTO>>($"api/booking/by-student/{username}");
+            return new StudentDetailDTO
+            {
+                Username = username,
+                Bookings = bookings ?? new List<BookingResponseDTO>()
+            };
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings for student {username}: {ex.Message}");
+            return new StudentDetailDTO
+            {
+                Username = username,
+                Bookings = new List<BookingResponseDTO>()
+            };
+        }
+    }
+
+
     public async Task<BookingResponseDTO> GetBookingAsync(int id)
     {
         try
