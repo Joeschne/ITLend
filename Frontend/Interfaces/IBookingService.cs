@@ -39,6 +39,12 @@ public interface IBookingService
     /// <returns>A StudentDetailDTO containing the student's username and their bookings.</returns>
     Task<StudentDetailDTO> GetStudentBookingsAsync(string username);
 
+    /// <summary>
+    /// Retrieves all bookings associated with a specific laptop.
+    /// </summary>
+    /// <param name="laptopId">The ID of the laptop.</param>
+    /// <returns>An enumerable collection of booking DTOs associated with the specified laptop.</returns>
+    Task<IEnumerable<BookingResponseDTO>> GetBookingsByLaptopAsync(int laptopId);
 
     /// <summary>
     /// Creates a new booking.

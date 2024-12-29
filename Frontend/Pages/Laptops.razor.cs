@@ -9,9 +9,15 @@ public partial class Laptops : ComponentBase
     [Inject]
     private ILaptopService LaptopService { get; set; }
 
+    [Inject]
+    private IBookingService BookingService { get; set; }
+
     private List<LaptopDTO> laptops = new();
     private LaptopDTO selectedLaptop;
-    private bool showModal = false;
+    private List<BookingResponseDTO>? selectedLaptopBookings;
+
+    private bool showAddEditModal = false;
+    private bool showBookingsModal = false;
     private string modalTitle = string.Empty;
     private bool isAddMode = false;
     private int availableLaptops;
@@ -34,34 +40,18 @@ public partial class Laptops : ComponentBase
         }
     }
 
-    private void AddLaptop()
+    private void OpenAddEditModal(LaptopDTO laptop, bool isAdd)
     {
-        selectedLaptop = new LaptopDTO
-        {
-            Id = 0,
-            IsAvailable = true,
-            Model = string.Empty,
-            IdentificationNumber = string.Empty,
-            DamageDescription = string.Empty
-        };
-        isAddMode = true;
-        modalTitle = "Add Laptop";
-        showModal = true;
+        selectedLaptop = laptop;
+        isAddMode = isAdd;
+        modalTitle = isAdd ? "Add Laptop" : "Edit Laptop";
+        showAddEditModal = true;
     }
 
-    private void EditLaptop(LaptopDTO laptop)
+    private void CloseAddEditModal()
     {
-        selectedLaptop = new LaptopDTO
-        {
-            Id = laptop.Id,
-            IsAvailable = laptop.IsAvailable,
-            Model = laptop.Model,
-            IdentificationNumber = laptop.IdentificationNumber,
-            DamageDescription = laptop.DamageDescription
-        };
-        isAddMode = false;
-        modalTitle = "Edit Laptop";
-        showModal = true;
+        showAddEditModal = false;
+        selectedLaptop = null;
     }
 
     private async Task SaveLaptop()
@@ -77,7 +67,7 @@ public partial class Laptops : ComponentBase
                 await LaptopService.UpdateLaptopAsync(selectedLaptop.Id, selectedLaptop);
             }
             await LoadLaptopsAsync();
-            CloseModal();
+            CloseAddEditModal();
         }
         catch (Exception ex)
         {
@@ -93,7 +83,7 @@ public partial class Laptops : ComponentBase
         {
             await LaptopService.DeleteLaptopAsync(selectedLaptop.Id);
             await LoadLaptopsAsync();
-            CloseModal();
+            CloseAddEditModal();
         }
         catch (Exception ex)
         {
@@ -101,9 +91,27 @@ public partial class Laptops : ComponentBase
         }
     }
 
-    private void CloseModal()
+    private async Task OpenBookingsModal(LaptopDTO laptop)
     {
-        showModal = false;
+        selectedLaptop = laptop;
+        showBookingsModal = true;
+
+        try
+        {
+            // Fetch booking history for the selected laptop
+            selectedLaptopBookings = (await BookingService.GetBookingsByLaptopAsync(laptop.Id)).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings for laptop {laptop.Id}: {ex.Message}");
+            selectedLaptopBookings = new List<BookingResponseDTO>();
+        }
+    }
+
+    private void CloseBookingsModal()
+    {
+        showBookingsModal = false;
         selectedLaptop = null;
+        selectedLaptopBookings = null;
     }
 }

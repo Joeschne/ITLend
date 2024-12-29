@@ -105,6 +105,37 @@ public class BookingController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Gets the list of bookings for a specific laptop by its ID.
+    /// </summary>
+    /// <param name="laptopId">The ID of the laptop.</param>
+    /// <returns>A list of booking DTOs for the specified laptop, or NotFound if none are found.</returns>
+    [HttpGet("by-laptop/{laptopId}")]
+    public async Task<ActionResult<IEnumerable<BookingResponseDTO>>> GetBookingsByLaptop(int laptopId)
+    {
+        try
+        {
+            List<BookingResponseDTO> bookings = await _context.Bookings
+                .Include(b => b.Student)
+                .Include(b => b.Laptop)
+                .Include(b => b.Teacher)
+                .Where(b => b.Laptop.Id == laptopId)
+                .OrderByDescending(b => b.BookingDateTime)
+                .Select(booking => MappingService.MapToBookingResponseDTO(booking))
+                .ToListAsync();
+
+            if (!bookings.Any())
+            {
+                return NotFound($"No bookings found for laptop with ID: {laptopId}");
+            }
+
+            return Ok(bookings);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while retrieving bookings. Error: {ex.Message}");
+        }
+    }
 
 
     /// <summary>

@@ -17,6 +17,8 @@ public class Program
         // Register Services
         builder.Services.AddScoped<IBookingService, BookingService>();
         builder.Services.AddScoped<ILaptopService, LaptopService>();
+        builder.Services.AddScoped<IStudentService, StudentService>();
+
 
 
 

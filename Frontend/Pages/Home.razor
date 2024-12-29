@@ -1,47 +1,83 @@
 ﻿@page "/"
-@using Frontend.Interfaces
-@using Shared.DTOs
-@inject IBookingService BookingService
+@using Frontend.Components
+
 
 <div class="container mt-4">
-    <h2>Open Bookings</h2>
+    <!-- Number of Available Laptops -->
+    <div class="d-flex justify-content-between mb-4">
+        <h1>Landing Page</h1>
+        <div>
+            <strong>Available Laptops:</strong> @availableLaptops
+        </div>
+    </div>
 
-    <ul class="list-group mt-4">
-        @if (OpenBookings == null)
+   <!-- Search Form -->
+<div class="mb-4">
+    <h5>Search for a Student</h5>
+    <div class="d-flex">
+        <input type="text"
+               class="form-control me-2"
+               placeholder="Enter username..."
+               @bind="searchQuery"
+               @oninput="SearchStudentsAsync" />
+        <button class="btn btn-primary" @onclick="OpenNewStudentModal">New</button>
+    </div>
+    @if (autocompleteResults.Any())
+    {
+        <ul class="list-group mt-2">
+            @foreach (var student in autocompleteResults)
+            {
+                <li class="list-group-item"
+                    @onclick="() => SelectStudent(student)">
+                    @student.Username
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<!-- Student Modal -->
+<StudentBookingsModal IsVisible="@showStudentModal"
+                      StudentDetail="@selectedStudent"
+                      ShowNewLendingButton="true"
+                      OnClose="CloseStudentModal"
+                      OnNewLending="OpenNewLendingModal" />
+
+    <!-- Open Bookings -->
+    <div>
+        <h5>Open Bookings</h5>
+        @if (openBookings == null)
         {
-            <li class="list-group-item">Loading...</li>
+            <div class="alert alert-info">Loading open bookings...</div>
         }
-        else if (!OpenBookings.Any())
+        else if (!openBookings.Any())
         {
-            <li class="list-group-item">No open bookings found.</li>
+            <div class="alert alert-warning">No open bookings found.</div>
         }
         else
         {
-            @foreach (var booking in OpenBookings)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Student: @booking.StudentUsername</h5>
-                        <p class="mb-1">Laptop Model: @booking.Laptop.Model</p>
-                        <p class="mb-1">Booking Date: @booking.BookingDateTime.ToString("g")</p>
-                        <p class="mb-1">Planned Return: @booking.PlannedReturn.ToString("g")</p>
-                        @if (!string.IsNullOrEmpty(booking.Comment))
-                        {
-                            <p class="text-muted mb-1">Comment: @booking.Comment</p>
-                        }
+            <div class="row">
+                @foreach (var booking in openBookings)
+                {
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Student: @booking.StudentUsername</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    Teacher: @(string.IsNullOrEmpty(booking.TeacherEmail) ? "N/A" : booking.TeacherEmail)
+                                </h6>
+                                <p class="card-text">
+                                    <strong>Laptop:</strong> @booking.Laptop.IdentificationNumber<br />
+                                    <strong>Booking Date:</strong> @booking.BookingDateTime.ToString("g")<br />
+                                    <strong>Planned Return:</strong> @booking.PlannedReturn.ToString("g")<br />
+                                    <strong>Comment:</strong> @booking.Comment
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <span class="badge bg-warning">Open</span>
-                </li>
-            }
+                }
+            </div>
         }
-    </ul>
+    </div>
+
 </div>
-
-@code {
-    private List<BookingResponseDTO> OpenBookings;
-
-    protected override async Task OnInitializedAsync()
-    {
-        OpenBookings = (await BookingService.GetNotReturnedBookingsAsync()).ToList();
-    }
-}

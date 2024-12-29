@@ -79,6 +79,18 @@ public class BookingService : IBookingService
         }
     }
 
+    public async Task<IEnumerable<BookingResponseDTO>> GetBookingsByLaptopAsync(int laptopId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<IEnumerable<BookingResponseDTO>>($"{ApiUrl}/by-laptop/{laptopId}");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.Error.WriteLine($"Error fetching bookings for laptop ID {laptopId}: {ex.Message}");
+            return new List<BookingResponseDTO>();
+        }
+    }
 
     public async Task<BookingResponseDTO> GetBookingAsync(int id)
     {

@@ -1,0 +1,72 @@
+﻿@using Shared.DTOs
+
+@if (IsVisible && Laptop != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Laptop Details</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Laptop Details -->
+                    <div class="mb-3">
+                        <strong>Model:</strong> @Laptop.Model
+                    </div>
+                    <div class="mb-3">
+                        <strong>Identification Number:</strong> @Laptop.IdentificationNumber
+                    </div>
+
+                    <!-- Booking History -->
+                    <h6>Booking History:</h6>
+                    @if (Bookings == null)
+                    {
+                        <div>Loading booking history...</div>
+                    }
+                    else if (!Bookings.Any())
+                    {
+                        <div>No bookings found for this laptop.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var booking in Bookings)
+                            {
+                                <li class="list-group-item">
+                                    <strong>Date:</strong> @booking.BookingDateTime.ToString("g")<br />
+                                    <strong>Booked By:</strong> @booking.StudentUsername
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public LaptopDTO? Laptop { get; set; }
+
+    [Parameter]
+    public List<BookingResponseDTO>? Bookings { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private void CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            OnClose.InvokeAsync();
+        }
+    }
+}
