@@ -144,6 +144,10 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    @if (selectedBooking != null)
+                    {
+                        <button class="btn btn-danger" @onclick="() => DeleteBooking(selectedBooking.Id)">Delete</button>
+                    }
                     <button class="btn btn-primary" @onclick="SaveChanges">Save changes</button>
                 </div>
             </div>

@@ -11,37 +11,56 @@
         </div>
     </div>
 
-   <!-- Search Form -->
-<div class="mb-4">
-    <h5>Search for a Student</h5>
-    <div class="d-flex">
-        <input type="text"
-               class="form-control me-2"
-               placeholder="Enter username..."
-               @bind="searchQuery"
-               @oninput="SearchStudentsAsync" />
-        <button class="btn btn-primary" @onclick="OpenNewStudentModal">New</button>
+       <!-- Search Form -->
+    <div class="mb-4">
+        <h5>Search for a Student</h5>
+        <div class="d-flex">
+            <input type="text"
+                   class="form-control me-2"
+                   placeholder="Enter username..."
+                   @bind="searchQuery"
+                   @oninput="SearchStudentsAsync" />
+            <button class="btn btn-primary" @onclick="OpenNewStudentModal">New</button>
+        </div>
+        @if (autocompleteResults.Any())
+        {
+            <ul class="list-group mt-2">
+                @foreach (var student in autocompleteResults)
+                {
+                    <li class="list-group-item"
+                        @onclick="() => SelectStudent(student)">
+                        @student.Username
+                    </li>
+                }
+            </ul>
+        }
     </div>
-    @if (autocompleteResults.Any())
-    {
-        <ul class="list-group mt-2">
-            @foreach (var student in autocompleteResults)
-            {
-                <li class="list-group-item"
-                    @onclick="() => SelectStudent(student)">
-                    @student.Username
-                </li>
-            }
-        </ul>
-    }
-</div>
 
-<!-- Student Modal -->
-<StudentBookingsModal IsVisible="@showStudentModal"
-                      StudentDetail="@selectedStudent"
-                      ShowNewLendingButton="true"
-                      OnClose="CloseStudentModal"
-                      OnNewLending="OpenNewLendingModal" />
+    <!-- Bootstrap Alert -->
+    @if (showNoLaptopsAlert)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            There are no available laptops.
+            <button type="button" class="btn-close" @onclick="DismissNoLaptopsAlert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Student Modal -->
+    <StudentBookingsModal IsVisible="@showStudentModal"
+                          StudentDetail="@selectedStudent"
+                          ShowNewLendingButton="true"
+                          OnClose="CloseStudentModal"
+                          OnNewLending="OpenNewLendingModal" />
+
+    <!-- New Lending Modal -->
+    <NewLendingModal IsVisible="@showNewLendingModal"
+                     NewBooking="@newBooking"
+                     OnClose="CloseNewLendingModal"
+                     OnSave="SaveNewBooking"
+                     AvailableLaptops="@availableLaptopList" />
+
+
+
 
     <!-- Open Bookings -->
     <div>
@@ -64,7 +83,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Student: @booking.StudentUsername</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">
-                                    Teacher: @(string.IsNullOrEmpty(booking.TeacherEmail) ? "N/A" : booking.TeacherEmail)
+                                    @(string.IsNullOrEmpty(booking.TeacherEmail) ? "Returned by Student" : $"Returned by: {booking.TeacherEmail}")
                                 </h6>
                                 <p class="card-text">
                                     <strong>Laptop:</strong> @booking.Laptop.IdentificationNumber<br />

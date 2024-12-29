@@ -1,0 +1,107 @@
+﻿@using Shared.DTOs
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Lending</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Student Username -->
+                    <div class="mb-3">
+                        <label class="form-label">Student Username</label>
+                        <input type="text" class="form-control" @bind="NewBooking.StudentUsername" readonly />
+                    </div>
+
+                    <!-- Laptop Dropdown -->
+                    <div class="mb-3">
+                        <label class="form-label">Laptop</label>
+                        <select class="form-select" @bind="NewBooking.LaptopIdentificationNumber">
+                            <option value="">Select a Laptop</option>
+                            @foreach (var laptop in AvailableLaptops)
+                            {
+                                <option value="@laptop.IdentificationNumber">
+                                    @laptop.Model (@laptop.IdentificationNumber)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Booking Date -->
+                    <div class="mb-3">
+                        <label class="form-label">Booking Date</label>
+                        <input type="datetime-local" class="form-control" @bind="NewBooking.BookingDateTime" />
+                    </div>
+
+                    <!-- Planned Return -->
+                    <div class="mb-3">
+                        <label class="form-label">Planned Return</label>
+                        <input type="datetime-local" class="form-control" @bind="NewBooking.PlannedReturn" />
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label class="form-label">Comment</label>
+                        <textarea class="form-control" rows="3" @bind="NewBooking.Comment"></textarea>
+                    </div>
+
+                    <!-- Return by Teacher -->
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="returnByTeacherCheck" @bind="ReturnByTeacher" />
+                        <label class="form-check-label" for="returnByTeacherCheck">Return by Teacher</label>
+                    </div>
+
+                    @if (ReturnByTeacher)
+                    {
+                        <!-- Teacher Email -->
+                        <div class="mb-3">
+                            <label class="form-label">Teacher Email</label>
+                            <input type="email" class="form-control" @bind="NewBooking.TeacherEmail" />
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    <button class="btn btn-primary" @onclick="SaveBooking">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public BookingRequestDTO NewBooking { get; set; } = new BookingRequestDTO();
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<BookingRequestDTO> OnSave { get; set; }
+
+    [Parameter]
+    public List<LaptopDTO> AvailableLaptops { get; set; } = new List<LaptopDTO>();
+
+    private bool ReturnByTeacher { get; set; }
+
+    private void CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task SaveBooking()
+    {
+        if (OnSave.HasDelegate)
+        {
+            await OnSave.InvokeAsync(NewBooking);
+        }
+    }
+}

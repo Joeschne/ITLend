@@ -10,7 +10,7 @@ public partial class Bookings : ComponentBase
     private IBookingService BookingService { get; set; }
 
     private IEnumerable<BookingResponseDTO> bookings;
-    private BookingResponseDTO selectedBooking;
+    private BookingResponseDTO? selectedBooking;
     private bool showEditModal;
     private bool showStudentModal = false;
     private StudentDetailDTO? selectedStudentDetail;
@@ -115,4 +115,20 @@ public partial class Bookings : ComponentBase
     {
         Console.WriteLine($"Student '{studentUsername}' clicked. Navigating to Student page...");
     }
+
+    private async Task DeleteBooking(int id)
+    {
+        try
+        {
+            await BookingService.DeleteBookingAsync(id);
+            CloseModal();
+            await LoadBookingsAsync();
+            StateHasChanged(); // Ensure the UI updates
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting booking: {ex.Message}");
+        }
+    }
+
 }

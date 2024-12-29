@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Frontend.Interfaces;
 using Shared.DTOs;
+using Microsoft.JSInterop;
 
 namespace Frontend.Pages;
 
@@ -21,6 +22,9 @@ public partial class Home : ComponentBase
     private List<BookingResponseDTO> openBookings;
     private bool showStudentModal = false;
     private StudentDetailDTO? selectedStudent;
+    private bool showNewLendingModal = false;
+    private BookingRequestDTO newBooking = new BookingRequestDTO();
+    private List<LaptopDTO> availableLaptopList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -34,6 +38,7 @@ public partial class Home : ComponentBase
         {
             var laptops = await LaptopService.GetLaptopsAsync();
             availableLaptops = laptops.Count(l => l.IsAvailable);
+            availableLaptopList = laptops.Where(l => l.IsAvailable).ToList(); // Store only available laptops for the dropdown
         }
         catch (Exception ex)
         {
@@ -95,33 +100,6 @@ public partial class Home : ComponentBase
         }
     }
 
-
-    private async Task OpenNewLendingModal()
-    {
-        try
-        {
-            if (selectedStudent != null)
-            {
-                // Check if student exists before creating a new one
-                var existingStudents = await StudentService.SearchStudentsAsync(selectedStudent.Username);
-
-                if (!existingStudents.Any(s => s.Username.Equals(selectedStudent.Username, StringComparison.OrdinalIgnoreCase)))
-                {
-                    // Create a new student
-                    await StudentService.AddStudentAsync(new StudentDTO { Username = selectedStudent.Username });
-                    Console.WriteLine($"New student '{selectedStudent.Username}' created.");
-                }
-            }
-
-            // Placeholder for opening lending modal logic
-            Console.WriteLine("Opening new lending modal...");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error creating new student or opening lending modal: {ex.Message}");
-        }
-    }
-
     private void OpenNewStudentModal()
     {
         // Initialize modal for a new student with no bookings
@@ -138,5 +116,77 @@ public partial class Home : ComponentBase
     {
         showStudentModal = false;
         selectedStudent = null;
+    }
+
+    private async Task OpenNewLendingModal()
+    {
+
+        if (availableLaptopList == null || !availableLaptopList.Any())
+        {
+            CloseStudentModal();
+            showNoLaptopsAlert = true;
+            return;
+        }
+        try
+        {
+            if (selectedStudent != null)
+            {
+                // Check if student exists before creating a new one
+                var existingStudents = await StudentService.SearchStudentsAsync(selectedStudent.Username);
+
+                if (!existingStudents.Any(s => s.Username.Equals(selectedStudent.Username, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Create a new student
+                    await StudentService.AddStudentAsync(new StudentDTO { Username = selectedStudent.Username });
+                    Console.WriteLine($"New student '{selectedStudent.Username}' created.");
+                }
+            }
+
+            // Initialize NewBooking object with pre-filled student username
+            newBooking = new BookingRequestDTO
+            {
+                StudentUsername = selectedStudent?.Username ?? string.Empty,
+                BookingDateTime = DateTime.Now,
+                PlannedReturn = DateTime.Today.AddHours(16) // Default planned return: today at 16:00
+            };
+
+            // Open New Lending Modal
+            showStudentModal = false; // Close the student modal
+            showNewLendingModal = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating new student or opening lending modal: {ex.Message}");
+        }
+    }
+
+
+    private void CloseNewLendingModal()
+    {
+        showNewLendingModal = false;
+    }
+
+    private async Task SaveNewBooking(BookingRequestDTO booking)
+    {
+        try
+        {
+            await BookingService.CreateBookingAsync(booking);
+            Console.WriteLine("Booking successfully created.");
+            showNewLendingModal = false;
+
+            // Reload open bookings
+            await LoadOpenBookingsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating booking: {ex.Message}");
+        }
+    }
+
+    private bool showNoLaptopsAlert = false;
+
+    private void DismissNoLaptopsAlert()
+    {
+        showNoLaptopsAlert = false;
     }
 }
