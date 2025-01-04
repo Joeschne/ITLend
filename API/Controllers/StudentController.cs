@@ -41,6 +41,17 @@ public class StudentController : ControllerBase
         return Ok(students);
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<StudentDTO>>> SearchStudents([FromQuery] string username)
+    {
+        List<StudentDTO> students = await _context.Students
+            .Where(s => s.Username.Contains(username))
+            .Select(student => MappingService.MapToStudentDTO(student))
+            .ToListAsync();
+
+        return Ok(students);
+    }
+
 
     /// <summary>
     /// Gets a specific student by ID.

@@ -1,60 +1,146 @@
 ﻿@page "/"
-@using System.Net.Http.Json
-@using Shared.DTOs
-@inject NavigationManager Navigation
-@inject HttpClient Http
+@using Frontend.Components
+
 
 <div class="container mt-4">
-    <h2>Laptop-Verleihliste</h2>
-
-    <div class="input-group mb-3">
-        <span class="input-group-text">Benutzername</span>
-        <InputText class="form-control" @bind-Value="username" placeholder="Enter username..." />
-        <button class="btn btn-primary" @onclick="NavigateToLoanPage">Ausleihen</button>
+    <!-- Number of Available Laptops -->
+    <div class="d-flex justify-content-between mb-4">
+        <div>
+            <strong>Available Laptops:</strong> @availableLaptops
+        </div>
     </div>
 
-    <ul class="list-group mt-4">
-        @foreach (var laptop in Laptops)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1">Model: @laptop.Model</h5>
-                    <p class="mb-1">Serial Number: @laptop.SerialNumber</p>
-                    @if (!string.IsNullOrEmpty(laptop.DamageDescription))
+    <div class="mb-4">
+        <h5>New Lending:</h5>
+        <div class="position-relative">
+            <div class="d-flex">
+                <input type="text"
+                       class="form-control"
+                       placeholder="Enter username..."
+                       @bind="searchQuery"
+                       @oninput="SearchStudentsAsync"
+                       @onkeydown="HandleKeyDown" 
+                       @ref="searchInputRef" />
+                <button class="btn btn-primary ms-2" @onclick="OpenNewStudentModal">New</button>
+            </div>
+            @if (autocompleteResults.Any())
+            {
+                <ul class="dropdown-menu show position-absolute w-100 mt-0" style="top: 100%; z-index: 1000;" role="listbox">
+                    @foreach (var student in autocompleteResults.Select((value, index) => new { value, index }))
                     {
-                        <p class="text-danger mb-1">Damage: @laptop.DamageDescription</p>
+                        <li class="dropdown-item @(highlightedIndex == student.index ? "active" : "")"
+                            @onclick="() => SelectStudent(student.value)"
+                            @onmouseenter="() => highlightedIndex = student.index"
+                            role="option" aria-selected="@(highlightedIndex == student.index)">
+                            @student.value.Username
+                        </li>
                     }
-                </div>
-                <span class="badge @(laptop.IsAvailable ? "bg-success" : "bg-danger")">
-                    @(laptop.IsAvailable ? "Verfügbar" : "Ausgeliehen")
-                </span>
-            </li>
-        }
-    </ul>
-</div>
+                </ul>
 
-@code {
-    // List of laptops
-    private List<LaptopDTO> Laptops = new List<LaptopDTO>
+            }
+        </div>
+    </div>
+
+
+
+    <!-- Bootstrap Alert -->
+    @if (showNoLaptopsAlert)
     {
-        new LaptopDTO { Id = 1, Model = "Dell XPS 15", SerialNumber = "12345-ABC", IsAvailable = true },
-        new LaptopDTO { Id = 2, Model = "MacBook Pro 16", SerialNumber = "67890-XYZ", IsAvailable = false, DamageDescription = "Cracked screen" },
-        new LaptopDTO { Id = 3, Model = "Lenovo ThinkPad X1", SerialNumber = "54321-DEF", IsAvailable = true }
-    };
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            There are no available laptops.
+            <button type="button" class="btn-close" @onclick="DismissNoLaptopsAlert" aria-label="Close"></button>
+        </div>
+    }
 
-    private string username = "";
+    <!-- Student Modal -->
+    <StudentBookingsModal IsVisible="@showStudentLendingModal"
+                          StudentDetail="@selectedStudent"
+                          ShowNewLendingButton="true"
+                          OnClose="CloseStudentLendingModal"
+                          OnNewLending="OpenNewLendingModal" />
 
-    // Navigate to the loan page with the entered username
-    private void NavigateToLoanPage()
-    {
-        if (!string.IsNullOrWhiteSpace(username))
+    <!-- New Lending Modal -->
+    <NewLendingModal IsVisible="@showNewLendingModal"
+                     NewBooking="@newBooking"
+                     OnClose="CloseNewLendingModal"
+                     OnSave="SaveNewBooking"
+                     AvailableLaptops="@availableLaptopList" />
+
+
+
+
+    <!-- Open Bookings -->
+    <div>
+        <h5>Open Bookings</h5>
+        @if (openBookings == null)
         {
-            Navigation.NavigateTo($"/loan/{Uri.EscapeDataString(username)}");
+            <div class="alert alert-info">Loading open bookings...</div>
+        }
+        else if (!openBookings.Any())
+        {
+            <div class="alert alert-warning">No open bookings found.</div>
         }
         else
         {
-            Console.WriteLine("Please enter a valid username.");
-        }
-    }
+            <div class="row">
+                @foreach (var booking in openBookings)
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="javascript:void(0)" @onclick="() => OpenStudentModal(booking.StudentUsername)">
+                                        @booking.StudentUsername
+                                    </a>
+                                </h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    @(string.IsNullOrEmpty(booking.TeacherEmail) ? "Returned by Student" : $"Returned by: {booking.TeacherEmail}")
+                                </h6>
+                                <p class="card-text">
+                                    <strong>Laptop:</strong>
+                                    <a href="javascript:void(0)" @onclick="() => OpenLaptopModal(booking.Laptop)">
+                                        @booking.Laptop?.IdentificationNumber
+                                    </a><br />
+                                    <strong>Booking Date:</strong> @booking.BookingDateTime.ToString("g")<br />
+                                    <strong>Planned Return:</strong> @booking.PlannedReturn.ToString("g")<br />
+                                    <strong>Comment:</strong> @booking.Comment
+                                </p>
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-secondary me-2" @onclick="() => EditBooking(booking)">Edit</button>
+                                    <button class="btn btn-primary" @onclick="() => OpenReturnModal(booking)">Return</button>
+                                </div>
+                            </div>
+                        </div>
 
-}
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+</div>
+
+<!-- Laptop Details Modal -->
+<LaptopBookingsModal IsVisible="@showLaptopModal"
+                    Laptop="@selectedLaptop"
+                    Bookings="@selectedLaptopBookings"
+                    OnClose="CloseLaptopModal" />
+
+<!-- Student Bookings Modal -->
+<StudentBookingsModal IsVisible="@showStudentModal"
+                      StudentDetail="@selectedStudent"
+                      ShowNewLendingButton="false"
+                      OnClose="CloseStudentModal"
+                      OnNewLending="OpenNewLendingModal" />
+
+<!-- Booking Edit Modal -->
+<BookingEditModal IsVisible="@showEditModal"
+                  Booking="@selectedBooking"
+                  OnClose="CloseEditModal"
+                  OnDelete="DeleteBooking"
+                  OnSave="SaveBookingChanges" />
+
+<BookingReturnModal IsVisible="@showReturnModal"
+                   Booking="@selectedBooking"
+                   OnClose="CloseReturnModal"
+                   OnReturn="HandleReturnBooking" />

@@ -1,0 +1,129 @@
+﻿@using Shared.DTOs
+@using Microsoft.AspNetCore.Components
+
+@if (IsVisible && Booking != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Booking</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Student Username -->
+                    <div class="mb-3">
+                        <label class="form-label">Student Username</label>
+                        <input type="text" class="form-control" @bind="Booking.StudentUsername" readonly />
+                    </div>
+
+                    <!-- Laptop Identification Number -->
+                    <div class="mb-3">
+                        <label class="form-label">Laptop Identification Number</label>
+                        <input type="text" class="form-control" @bind="Booking.Laptop.IdentificationNumber" />
+                    </div>
+
+                    <!-- Teacher Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Teacher Email</label>
+                        <input type="email" class="form-control" @bind="Booking.TeacherEmail" />
+                    </div>
+
+                    <!-- Returned -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="returnedCheck" @bind="Booking.Returned" />
+                        <label class="form-check-label" for="returnedCheck">Returned</label>
+                    </div>
+
+                    <!-- Booking DateTime -->
+                    <div class="mb-3">
+                        <label class="form-label">Booking DateTime</label>
+                        <input type="datetime-local" class="form-control" @bind="Booking.BookingDateTime" />
+                    </div>
+
+                    <!-- Planned Return -->
+                    <div class="mb-3">
+                        <label class="form-label">Planned Return</label>
+                        <input type="datetime-local" class="form-control" @bind="Booking.PlannedReturn" />
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label class="form-label">Comment</label>
+                        <textarea class="form-control" rows="3" @bind="Booking.Comment"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    <button class="btn btn-danger" @onclick="DeleteBooking">Delete</button>
+                    <button class="btn btn-primary" @onclick="SaveChanges">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Indicates whether the modal is visible.
+    /// </summary>
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    /// <summary>
+    /// The booking data to be edited.
+    /// </summary>
+    [Parameter]
+    public BookingResponseDTO? Booking { get; set; }
+
+    /// <summary>
+    /// Event callback triggered when the modal is closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Event callback triggered when the booking is deleted.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+
+    /// <summary>
+    /// Event callback triggered when changes to the booking are saved.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BookingResponseDTO> OnSave { get; set; }
+
+    /// <summary>
+    /// Closes the modal.
+    /// </summary>
+    private void CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            OnClose.InvokeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Deletes the current booking by invoking the <see cref="OnDelete"/> callback.
+    /// </summary>
+    private void DeleteBooking()
+    {
+        if (OnDelete.HasDelegate && Booking != null)
+        {
+            OnDelete.InvokeAsync(Booking.Id);
+        }
+    }
+
+    /// <summary>
+    /// Saves changes to the current booking by invoking the <see cref="OnSave"/> callback.
+    /// </summary>
+    private void SaveChanges()
+    {
+        if (OnSave.HasDelegate && Booking != null)
+        {
+            OnSave.InvokeAsync(Booking);
+        }
+    }
+}
