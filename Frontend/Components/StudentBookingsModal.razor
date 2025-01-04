@@ -2,7 +2,9 @@
 
 @if (IsVisible && StudentDetail != null)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"
+         @onkeydown="ShowNewLendingButton ? HandleKeyDown : null"
+         @ref="studentModalRef">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -54,21 +56,75 @@
 }
 
 @code {
+    /// <summary>
+    /// Determines if the modal is visible.
+    /// </summary>
     [Parameter]
     public bool IsVisible { get; set; }
 
+    /// <summary>
+    /// The details of the student to display.
+    /// </summary>
     [Parameter]
     public StudentDetailDTO? StudentDetail { get; set; }
 
+    /// <summary>
+    /// Callback triggered when the modal is closed.
+    /// </summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// Determines if the "New Lending" button is visible.
+    /// </summary>
     [Parameter]
     public bool ShowNewLendingButton { get; set; } = false;
 
+    /// <summary>
+    /// Callback triggered when "New Lending" is clicked.
+    /// </summary>
     [Parameter]
     public EventCallback OnNewLending { get; set; }
 
+    private ElementReference studentModalRef;
+    private bool focusOnRender = false; // Flag to control focus after rendering
+
+    /// <summary>
+    /// Sets focus flag when modal becomes visible.
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && ShowNewLendingButton)
+        {
+            focusOnRender = true;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to set focus on the modal after rendering.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (focusOnRender)
+        {
+            focusOnRender = false; // Reset the flag after attempting to focus
+            if (studentModalRef.Context != null)
+            {
+                try
+                {
+                    await studentModalRef.FocusAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error focusing student modal: {ex.Message}");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Closes the modal and invokes the <see cref="OnClose"/> callback.
+    /// </summary>
     private void CloseModal()
     {
         if (OnClose.HasDelegate)
@@ -77,11 +133,26 @@
         }
     }
 
+    /// <summary>
+    /// Invokes the <see cref="OnNewLending"/> callback for creating a new lending.
+    /// </summary>
     private void OpenNewLending()
     {
         if (OnNewLending.HasDelegate)
         {
             OnNewLending.InvokeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Handles the "Enter" key press to trigger the "New Lending" action.
+    /// </summary>
+    /// <param name="e">The keyboard event arguments.</param>
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && ShowNewLendingButton)
+        {
+            OpenNewLending();
         }
     }
 }

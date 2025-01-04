@@ -92,11 +92,6 @@ public class BookingController : ControllerBase
                 .Select(booking => MappingService.MapToBookingResponseDTO(booking))
                 .ToListAsync();
 
-            if (!bookings.Any())
-            {
-                return NotFound($"No bookings found for student with username: {username}");
-            }
-
             return Ok(bookings);
         }
         catch (Exception ex)
@@ -180,6 +175,14 @@ public class BookingController : ControllerBase
 
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
+
+        // Update the laptop's availability
+        var laptop = await _context.Laptops.FirstOrDefaultAsync(l => l.Id == booking.LaptopId);
+        if (laptop != null)
+        {
+            laptop.IsAvailable = false;
+            await _context.SaveChangesAsync();
+        }
 
         Booking? createdBooking = await _context.Bookings
             .Include(b => b.Student)

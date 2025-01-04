@@ -1,4 +1,7 @@
-﻿@using Shared.DTOs
+﻿@using System.ComponentModel.DataAnnotations
+@using Shared.DTOs
+@inject HttpClient Http
+
 @if (IsVisible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -9,62 +12,104 @@
                     <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Student Username -->
-                    <div class="mb-3">
-                        <label class="form-label">Student Username</label>
-                        <input type="text" class="form-control" @bind="NewBooking.StudentUsername" readonly />
-                    </div>
+                    <EditForm Model="NewBooking" OnValidSubmit="SaveBooking" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-                    <!-- Laptop Dropdown -->
-                    <div class="mb-3">
-                        <label class="form-label">Laptop</label>
-                        <select class="form-select" @bind="NewBooking.LaptopIdentificationNumber">
-                            <option value="">Select a Laptop</option>
-                            @foreach (var laptop in AvailableLaptops)
-                            {
-                                <option value="@laptop.IdentificationNumber">
-                                    @laptop.Model (@laptop.IdentificationNumber)
-                                </option>
-                            }
-                        </select>
-                    </div>
-
-                    <!-- Booking Date -->
-                    <div class="mb-3">
-                        <label class="form-label">Booking Date</label>
-                        <input type="datetime-local" class="form-control" @bind="NewBooking.BookingDateTime" />
-                    </div>
-
-                    <!-- Planned Return -->
-                    <div class="mb-3">
-                        <label class="form-label">Planned Return</label>
-                        <input type="datetime-local" class="form-control" @bind="NewBooking.PlannedReturn" />
-                    </div>
-
-                    <!-- Comment -->
-                    <div class="mb-3">
-                        <label class="form-label">Comment</label>
-                        <textarea class="form-control" rows="3" @bind="NewBooking.Comment"></textarea>
-                    </div>
-
-                    <!-- Return by Teacher -->
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="returnByTeacherCheck" @bind="ReturnByTeacher" />
-                        <label class="form-check-label" for="returnByTeacherCheck">Return by Teacher</label>
-                    </div>
-
-                    @if (ReturnByTeacher)
-                    {
-                        <!-- Teacher Email -->
+                        <!-- Student Username -->
                         <div class="mb-3">
-                            <label class="form-label">Teacher Email</label>
-                            <input type="email" class="form-control" @bind="NewBooking.TeacherEmail" />
+                            <label class="form-label">Student Username</label>
+                            <input type="text" class="form-control" @bind="NewBooking.StudentUsername" readonly />
+                            <ValidationMessage For="@(() => NewBooking.StudentUsername)" />
                         </div>
-                    }
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                    <button class="btn btn-primary" @onclick="SaveBooking">Save</button>
+
+                        <!-- Laptop Dropdown -->
+                        <div class="mb-3">
+                            <label class="form-label">Laptop</label>
+                            <select class="form-select" @bind="NewBooking.LaptopIdentificationNumber">
+                                <option value="">Select a Laptop</option>
+                                @foreach (var laptop in AvailableLaptops)
+                                {
+                                    <option value="@laptop.IdentificationNumber">
+                                        @laptop.Model (@laptop.IdentificationNumber)
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => NewBooking.LaptopIdentificationNumber)" />
+                        </div>
+
+                        <!-- Booking Date -->
+                        <div class="mb-3">
+                            <label class="form-label">Booking Date</label>
+                            <input type="datetime-local" class="form-control" @bind="NewBooking.BookingDateTime" />
+                            <ValidationMessage For="@(() => NewBooking.BookingDateTime)" />
+                        </div>
+
+                        <!-- Planned Return -->
+                        <div class="mb-3">
+                            <label class="form-label">Planned Return</label>
+                            <input type="datetime-local" class="form-control" @bind="NewBooking.PlannedReturn" />
+                            <ValidationMessage For="@(() => NewBooking.PlannedReturn)" />
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-3">
+                            <label class="form-label">Comment</label>
+                            <textarea class="form-control" rows="3" @bind="NewBooking.Comment"></textarea>
+                            <ValidationMessage For="@(() => NewBooking.Comment)" />
+                        </div>
+
+                        <!-- Return by Teacher -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="returnByTeacherCheck" @bind="ReturnByTeacher" />
+                            <label class="form-check-label" for="returnByTeacherCheck">Return by Teacher</label>
+                        </div>
+
+                        @if (ReturnByTeacher)
+                        {
+                            <!-- Teacher Email Autocomplete -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Teacher Email</label>
+                                <input type="text"
+                                       id="email"
+                                       class="form-control"
+                                       placeholder="Enter teacher's email..."
+                                       @oninput="e => { searchTeacherEmail = e.Value.ToString(); GenerateEmailMessage(); SearchTeachers(); }"
+                                       list="teacherEmails" />
+                                <datalist id="teacherEmails">
+                                    @foreach (var email in filteredEmails)
+                                    {
+                                        <option value="@email"></option>
+                                    }
+                                </datalist>
+                                <ValidationMessage For="@(() => NewBooking.TeacherEmail)" />
+                            </div>
+
+                            <!-- Email Message -->
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea id="message"
+                                          class="form-control"
+                                          rows="5"
+                                          @bind="emailMessage"></textarea>
+                            </div>
+
+                            <!-- Email Status Alert -->
+                            @if (!string.IsNullOrEmpty(alertMessage))
+                            {
+                                <div class="alert @alertClass alert-dismissible fade show" role="alert">
+                                    @alertMessage
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            }
+                        }
+
+                        <!-- Submit and Close Buttons -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </EditForm>
                 </div>
             </div>
         </div>
@@ -72,36 +117,184 @@
 }
 
 @code {
+    /// <summary>
+    /// Determines if the modal is visible.
+    /// </summary>
     [Parameter]
     public bool IsVisible { get; set; }
 
+    /// <summary>
+    /// The booking being created or edited.
+    /// </summary>
     [Parameter]
     public BookingRequestDTO NewBooking { get; set; } = new BookingRequestDTO();
 
+    /// <summary>
+    /// Callback triggered when the modal is closed.
+    /// </summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// Callback triggered when the booking is saved.
+    /// </summary>
     [Parameter]
     public EventCallback<BookingRequestDTO> OnSave { get; set; }
 
+    /// <summary>
+    /// List of available laptops to select from.
+    /// </summary>
     [Parameter]
     public List<LaptopDTO> AvailableLaptops { get; set; } = new List<LaptopDTO>();
 
     private bool ReturnByTeacher { get; set; }
+    private string searchTeacherEmail = string.Empty;
+    private List<string> filteredEmails = new();
+    private string emailMessage = "";
+    private string alertMessage = string.Empty;
+    private string alertClass = string.Empty;
 
+    /// <summary>
+    /// Searches for teachers based on the entered email.
+    /// </summary>
+    private async Task SearchTeachers()
+    {
+        if (string.IsNullOrWhiteSpace(searchTeacherEmail))
+        {
+            filteredEmails.Clear();
+            return;
+        }
+
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<TeacherDTO>>($"/api/Teacher?search={searchTeacherEmail}");
+            filteredEmails = response?.Select(t => t.Email).ToList() ?? new List<string>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error searching teachers: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Generates the default email message based on the teacher's email and student username.
+    /// </summary>
+    private void GenerateEmailMessage()
+    {
+        if (string.IsNullOrWhiteSpace(searchTeacherEmail) || string.IsNullOrWhiteSpace(NewBooking.StudentUsername))
+        {
+            emailMessage = "";
+            return;
+        }
+
+        var firstName = searchTeacherEmail.Split('@')[0].Split('.')[0];
+        emailMessage = $"Hallo {firstName},\n\n" +
+                       $"Der Schüler mit dem Nutzernamen {NewBooking.StudentUsername} wird dir einen ausgeliehenen Laptop am Ende des Unterrichts abgeben.\n\n" +
+                       "Vielen Dank,\n" +
+                       "IT-Team GIBZ";
+    }
+
+    /// <summary>
+    /// Sends an email to the teacher.
+    /// </summary>
+    private async Task SendEmail()
+    {
+        if (string.IsNullOrWhiteSpace(searchTeacherEmail))
+        {
+            SetAlert("Please enter an email address!", "alert-danger");
+            return;
+        }
+
+        var request = new
+        {
+            RecipientEmail = searchTeacherEmail,
+            Message = emailMessage
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/Teacher/send-email", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SetAlert("Email sent successfully!", "alert-success");
+            }
+            else
+            {
+                SetAlert("Failed to send email. Please try again later.", "alert-danger");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetAlert($"Error: {ex.Message}", "alert-danger");
+        }
+    }
+
+    /// <summary>
+    /// Sets the alert message and CSS class for the alert.
+    /// </summary>
+    private void SetAlert(string message, string cssClass)
+    {
+        alertMessage = message;
+        alertClass = cssClass;
+
+        _ = Task.Delay(5000).ContinueWith(_ =>
+        {
+            alertMessage = string.Empty;
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// Saves the booking after performing email actions if required.
+    /// </summary>
+    private async Task SaveBooking()
+    {
+        if (ReturnByTeacher)
+        {
+            await SendEmail();
+
+            if (!string.IsNullOrEmpty(alertMessage) &&
+                (alertClass.Contains("alert-success") || alertClass.Contains("alert-danger")))
+            {
+                await Task.Delay(3000);
+            }
+        }
+
+        try
+        {
+            if (OnSave.HasDelegate)
+            {
+                Console.WriteLine("Attempting to save booking...");
+                await OnSave.InvokeAsync(NewBooking);
+                Console.WriteLine("Booking saved successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving booking: {ex.Message}");
+            SetAlert($"Error: {ex.Message}", "alert-danger");
+        }
+    }
+
+    /// <summary>
+    /// Handles invalid form submission.
+    /// </summary>
+    private void HandleInvalidSubmit()
+    {
+        alertMessage = "Please correct the errors in the form.";
+        alertClass = "alert-danger";
+        Console.WriteLine("Validation failed: Form contains invalid inputs.");
+    }
+
+    /// <summary>
+    /// Closes the modal and triggers the OnClose callback.
+    /// </summary>
     private void CloseModal()
     {
         if (OnClose.HasDelegate)
         {
             OnClose.InvokeAsync();
-        }
-    }
-
-    private async Task SaveBooking()
-    {
-        if (OnSave.HasDelegate)
-        {
-            await OnSave.InvokeAsync(NewBooking);
         }
     }
 }

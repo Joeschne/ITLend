@@ -4,15 +4,32 @@ using Frontend.Interfaces;
 
 namespace Frontend.Services
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Frontend.Interfaces.ILaptopService" />
     public class LaptopService : ILaptopService
     {
+        /// <summary>
+        /// The HTTP client
+        /// </summary>
         private readonly HttpClient _httpClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LaptopService"/> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
         public LaptopService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Fetches the list of all laptops.
+        /// </summary>
+        /// <returns>
+        /// A list of LaptopDTO objects.
+        /// </returns>
         public async Task<List<LaptopDTO>> GetLaptopsAsync()
         {
             try
@@ -26,6 +43,13 @@ namespace Frontend.Services
             }
         }
 
+        /// <summary>
+        /// Fetches a specific laptop by ID.
+        /// </summary>
+        /// <param name="id">The ID of the laptop to retrieve.</param>
+        /// <returns>
+        /// A LaptopDTO object if found.
+        /// </returns>
         public async Task<LaptopDTO> GetLaptopAsync(int id)
         {
             try
@@ -39,6 +63,13 @@ namespace Frontend.Services
             }
         }
 
+        /// <summary>
+        /// Creates a new laptop.
+        /// </summary>
+        /// <param name="laptop">The LaptopDTO object to create.</param>
+        /// <returns>
+        /// The created LaptopDTO object.
+        /// </returns>
         public async Task<LaptopDTO> CreateLaptopAsync(LaptopDTO laptop)
         {
             try
@@ -54,6 +85,11 @@ namespace Frontend.Services
             }
         }
 
+        /// <summary>
+        /// Updates an existing laptop.
+        /// </summary>
+        /// <param name="id">The ID of the laptop to update.</param>
+        /// <param name="laptop">The updated LaptopDTO object.</param>
         public async Task UpdateLaptopAsync(int id, LaptopDTO laptop)
         {
             try
@@ -68,6 +104,10 @@ namespace Frontend.Services
             }
         }
 
+        /// <summary>
+        /// Deletes a laptop by ID.
+        /// </summary>
+        /// <param name="id">The ID of the laptop to delete.</param>
         public async Task DeleteLaptopAsync(int id)
         {
             try

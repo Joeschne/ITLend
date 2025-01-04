@@ -8,16 +8,36 @@ using Shared.DTOs;
 
 namespace Frontend.Services;
 
+/// <summary>
+/// 
+/// </summary>
+/// <seealso cref="Frontend.Interfaces.IBookingService" />
 public class BookingService : IBookingService
 {
+    /// <summary>
+    /// The HTTP client
+    /// </summary>
     private readonly HttpClient _httpClient;
+    /// <summary>
+    /// The API URL
+    /// </summary>
     private const string ApiUrl = "https://localhost:7120/api/Booking";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BookingService"/> class.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client.</param>
     public BookingService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
+    /// <summary>
+    /// Retrieves all bookings.
+    /// </summary>
+    /// <returns>
+    /// An enumerable collection of booking DTOs.
+    /// </returns>
     public async Task<IEnumerable<BookingResponseDTO>> GetBookingsAsync()
     {
         try
@@ -31,6 +51,12 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Retrieves bookings that have not been returned.
+    /// </summary>
+    /// <returns>
+    /// An enumerable collection of booking DTOs that are not returned.
+    /// </returns>
     public async Task<IEnumerable<BookingResponseDTO>> GetNotReturnedBookingsAsync()
     {
         try
@@ -44,6 +70,12 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Retrieves bookings that have been returned.
+    /// </summary>
+    /// <returns>
+    /// An enumerable collection of booking DTOs that are returned.
+    /// </returns>
     public async Task<IEnumerable<BookingResponseDTO>> GetReturnedBookingsAsync()
     {
         try
@@ -57,6 +89,13 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Retrieves all bookings associated with a specific student.
+    /// </summary>
+    /// <param name="username">The username of the student.</param>
+    /// <returns>
+    /// A StudentDetailDTO containing the student's username and their bookings.
+    /// </returns>
     public async Task<StudentDetailDTO> GetStudentBookingsAsync(string username)
     {
         try
@@ -79,6 +118,13 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Retrieves all bookings associated with a specific laptop.
+    /// </summary>
+    /// <param name="laptopId">The ID of the laptop.</param>
+    /// <returns>
+    /// An enumerable collection of booking DTOs associated with the specified laptop.
+    /// </returns>
     public async Task<IEnumerable<BookingResponseDTO>> GetBookingsByLaptopAsync(int laptopId)
     {
         try
@@ -92,6 +138,13 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Retrieves a specific booking by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the booking to retrieve.</param>
+    /// <returns>
+    /// A booking DTO representing the booking with the specified ID.
+    /// </returns>
     public async Task<BookingResponseDTO> GetBookingAsync(int id)
     {
         try
@@ -105,6 +158,13 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Creates a new booking.
+    /// </summary>
+    /// <param name="booking">The booking DTO containing details of the booking to create.</param>
+    /// <returns>
+    /// The created booking DTO.
+    /// </returns>
     public async Task<BookingResponseDTO> CreateBookingAsync(BookingRequestDTO booking)
     {
         try
@@ -120,6 +180,11 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Updates an existing booking.
+    /// </summary>
+    /// <param name="id">The ID of the booking to update.</param>
+    /// <param name="booking">The booking DTO containing the updated details of the booking.</param>
     public async Task UpdateBookingAsync(int id, BookingRequestDTO booking)
     {
         try
@@ -134,6 +199,10 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Deletes a specific booking by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the booking to delete.</param>
     public async Task DeleteBookingAsync(int id)
     {
         try
@@ -148,6 +217,10 @@ public class BookingService : IBookingService
         }
     }
 
+    /// <summary>
+    /// Handles the error.
+    /// </summary>
+    /// <param name="ex">The ex.</param>
     private void HandleError(HttpRequestException ex)
     {
         // Handle error appropriately, e.g., log to a service, show a notification, etc.

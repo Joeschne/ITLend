@@ -50,18 +50,33 @@
 }
 
 @code {
+    /// <summary>
+    /// Indicates whether the modal is visible.
+    /// </summary>
     [Parameter]
     public bool IsVisible { get; set; }
 
+    /// <summary>
+    /// The laptop whose details are being displayed.
+    /// </summary>
     [Parameter]
     public LaptopDTO? Laptop { get; set; }
 
+    /// <summary>
+    /// The list of bookings associated with the laptop.
+    /// </summary>
     [Parameter]
     public List<BookingResponseDTO>? Bookings { get; set; }
 
+    /// <summary>
+    /// Event callback triggered when the modal is closed.
+    /// </summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// Closes the modal by invoking the <see cref="OnClose"/> callback.
+    /// </summary>
     private void CloseModal()
     {
         if (OnClose.HasDelegate)

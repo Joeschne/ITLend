@@ -4,13 +4,21 @@
 <div class="container mt-4">
     <h1 class="mb-4">Bookings</h1>
 
-    @if (bookings == null)
+    <!-- Search Input -->
+    <div class="mb-4">
+        <input type="text"
+               class="form-control"
+               placeholder="Search by username..."
+               @oninput="e => { searchQuery = e.Value.ToString(); FilterBookings(); }" />
+    </div>
+
+    @if (filteredBookings == null)
     {
         <div class="alert alert-info">
             <span>Loading bookings...</span>
         </div>
     }
-    else if (!bookings.Any())
+    else if (!filteredBookings.Any())
     {
         <div class="alert alert-warning">
             <span>No bookings found.</span>
@@ -19,7 +27,7 @@
     else
     {
         <ul class="list-group">
-            @foreach (var booking in bookings)
+            @foreach (var booking in PaginatedBookings)
             {
                 <li class="list-group-item mb-2">
                     <div class="row">
@@ -36,7 +44,10 @@
                         <!-- Laptop IdentificationNumber -->
                         <div class="col-md-3 mb-2">
                             <strong>Laptop Number:</strong>
-                            @booking.Laptop?.IdentificationNumber
+                            <a href="javascript:void(0)"
+                               @onclick="() => OpenLaptopModal(booking.Laptop)">
+                                @booking.Laptop?.IdentificationNumber
+                            </a>
                         </div>
 
                         <!-- Teacher Email -->
@@ -79,78 +90,43 @@
                 </li>
             }
         </ul>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                </li>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var pageNumber = i;
+                    <!-- Create a local copy -->
+                    <li class="page-item @(currentPage == i ? "active" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="NextPage">Next</button>
+                </li>
+            </ul>
+        </nav>
     }
 </div>
 
+<!-- Student Bookings Modal -->
 <StudentBookingsModal IsVisible="@showStudentModal"
                       StudentDetail="@selectedStudentDetail"
                       OnClose="CloseStudentModal" />
 
+<!-- Laptop Modal -->
+<LaptopBookingsModal IsVisible="@showLaptopModal"
+                     Laptop="@selectedLaptop"
+                     Bookings="@selectedLaptopBookings"
+                     OnClose="CloseLaptopModal" />
 
-<!-- Edit Booking Modal -->
-@if (showEditModal && selectedBooking != null)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Booking</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Student Username (read-only or up to you if you want it editable) -->
-                    <div class="mb-3">
-                        <label class="form-label">Student Username</label>
-                        <input type="text" class="form-control" @bind="selectedBooking.StudentUsername" readonly />
-                    </div>
-
-                    <!-- Laptop Identification Number -->
-                    <div class="mb-3">
-                        <label class="form-label">Laptop Identification Number</label>
-                        <input type="text" class="form-control" @bind="selectedBooking.Laptop.IdentificationNumber" />
-                    </div>
-
-                    <!-- Teacher Email -->
-                    <div class="mb-3">
-                        <label class="form-label">Teacher Email</label>
-                        <input type="email" class="form-control" @bind="selectedBooking.TeacherEmail" />
-                    </div>
-
-                    <!-- Returned -->
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="returnedCheck" @bind="selectedBooking.Returned" />
-                        <label class="form-check-label" for="returnedCheck">
-                            Returned
-                        </label>
-                    </div>
-
-                    <!-- Booking DateTime -->
-                    <div class="mb-3">
-                        <label class="form-label">Booking DateTime</label>
-                        <input type="datetime-local" class="form-control" @bind="selectedBooking.BookingDateTime" />
-                    </div>
-
-                    <!-- Planned Return -->
-                    <div class="mb-3">
-                        <label class="form-label">Planned Return</label>
-                        <input type="datetime-local" class="form-control" @bind="selectedBooking.PlannedReturn" />
-                    </div>
-
-                    <!-- Comment -->
-                    <div class="mb-3">
-                        <label class="form-label">Comment</label>
-                        <textarea class="form-control" rows="3" @bind="selectedBooking.Comment"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                    @if (selectedBooking != null)
-                    {
-                        <button class="btn btn-danger" @onclick="() => DeleteBooking(selectedBooking.Id)">Delete</button>
-                    }
-                    <button class="btn btn-primary" @onclick="SaveChanges">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<!-- Booking Edit Modal -->
+<BookingEditModal IsVisible="@showEditModal"
+                  Booking="@selectedBooking"
+                  OnClose="CloseEditModal"
+                  OnDelete="DeleteBooking"
+                  OnSave="SaveBookingChanges" />

@@ -5,36 +5,43 @@
 <div class="container mt-4">
     <!-- Number of Available Laptops -->
     <div class="d-flex justify-content-between mb-4">
-        <h1>Landing Page</h1>
         <div>
             <strong>Available Laptops:</strong> @availableLaptops
         </div>
     </div>
 
-       <!-- Search Form -->
     <div class="mb-4">
-        <h5>Search for a Student</h5>
-        <div class="d-flex">
-            <input type="text"
-                   class="form-control me-2"
-                   placeholder="Enter username..."
-                   @bind="searchQuery"
-                   @oninput="SearchStudentsAsync" />
-            <button class="btn btn-primary" @onclick="OpenNewStudentModal">New</button>
+        <h5>New Lending:</h5>
+        <div class="position-relative">
+            <div class="d-flex">
+                <input type="text"
+                       class="form-control"
+                       placeholder="Enter username..."
+                       @bind="searchQuery"
+                       @oninput="SearchStudentsAsync"
+                       @onkeydown="HandleKeyDown" 
+                       @ref="searchInputRef" />
+                <button class="btn btn-primary ms-2" @onclick="OpenNewStudentModal">New</button>
+            </div>
+            @if (autocompleteResults.Any())
+            {
+                <ul class="dropdown-menu show position-absolute w-100 mt-0" style="top: 100%; z-index: 1000;" role="listbox">
+                    @foreach (var student in autocompleteResults.Select((value, index) => new { value, index }))
+                    {
+                        <li class="dropdown-item @(highlightedIndex == student.index ? "active" : "")"
+                            @onclick="() => SelectStudent(student.value)"
+                            @onmouseenter="() => highlightedIndex = student.index"
+                            role="option" aria-selected="@(highlightedIndex == student.index)">
+                            @student.value.Username
+                        </li>
+                    }
+                </ul>
+
+            }
         </div>
-        @if (autocompleteResults.Any())
-        {
-            <ul class="list-group mt-2">
-                @foreach (var student in autocompleteResults)
-                {
-                    <li class="list-group-item"
-                        @onclick="() => SelectStudent(student)">
-                        @student.Username
-                    </li>
-                }
-            </ul>
-        }
     </div>
+
+
 
     <!-- Bootstrap Alert -->
     @if (showNoLaptopsAlert)
@@ -46,10 +53,10 @@
     }
 
     <!-- Student Modal -->
-    <StudentBookingsModal IsVisible="@showStudentModal"
+    <StudentBookingsModal IsVisible="@showStudentLendingModal"
                           StudentDetail="@selectedStudent"
                           ShowNewLendingButton="true"
-                          OnClose="CloseStudentModal"
+                          OnClose="CloseStudentLendingModal"
                           OnNewLending="OpenNewLendingModal" />
 
     <!-- New Lending Modal -->
@@ -78,21 +85,33 @@
             <div class="row">
                 @foreach (var booking in openBookings)
                 {
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <div class="card shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">Student: @booking.StudentUsername</h5>
+                                <h5 class="card-title">
+                                    <a href="javascript:void(0)" @onclick="() => OpenStudentModal(booking.StudentUsername)">
+                                        @booking.StudentUsername
+                                    </a>
+                                </h5>
                                 <h6 class="card-subtitle mb-2 text-muted">
                                     @(string.IsNullOrEmpty(booking.TeacherEmail) ? "Returned by Student" : $"Returned by: {booking.TeacherEmail}")
                                 </h6>
                                 <p class="card-text">
-                                    <strong>Laptop:</strong> @booking.Laptop.IdentificationNumber<br />
+                                    <strong>Laptop:</strong>
+                                    <a href="javascript:void(0)" @onclick="() => OpenLaptopModal(booking.Laptop)">
+                                        @booking.Laptop?.IdentificationNumber
+                                    </a><br />
                                     <strong>Booking Date:</strong> @booking.BookingDateTime.ToString("g")<br />
                                     <strong>Planned Return:</strong> @booking.PlannedReturn.ToString("g")<br />
                                     <strong>Comment:</strong> @booking.Comment
                                 </p>
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-secondary me-2" @onclick="() => EditBooking(booking)">Edit</button>
+                                    <button class="btn btn-primary" @onclick="() => OpenReturnModal(booking)">Return</button>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 }
             </div>
@@ -100,3 +119,28 @@
     </div>
 
 </div>
+
+<!-- Laptop Details Modal -->
+<LaptopBookingsModal IsVisible="@showLaptopModal"
+                    Laptop="@selectedLaptop"
+                    Bookings="@selectedLaptopBookings"
+                    OnClose="CloseLaptopModal" />
+
+<!-- Student Bookings Modal -->
+<StudentBookingsModal IsVisible="@showStudentModal"
+                      StudentDetail="@selectedStudent"
+                      ShowNewLendingButton="false"
+                      OnClose="CloseStudentModal"
+                      OnNewLending="OpenNewLendingModal" />
+
+<!-- Booking Edit Modal -->
+<BookingEditModal IsVisible="@showEditModal"
+                  Booking="@selectedBooking"
+                  OnClose="CloseEditModal"
+                  OnDelete="DeleteBooking"
+                  OnSave="SaveBookingChanges" />
+
+<BookingReturnModal IsVisible="@showReturnModal"
+                   Booking="@selectedBooking"
+                   OnClose="CloseReturnModal"
+                   OnReturn="HandleReturnBooking" />
