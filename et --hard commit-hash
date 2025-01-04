@@ -1,0 +1,26 @@
+[33m057f260[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeatures/frontend[m[33m, [m[1;31morigin/features/frontend[m[33m, [m[1;32mmain[m[33m)[m The Frontend including the Pages Home, Bookings and Laptops
+[33m6ecf23b[m Added Booking to the page, added Dropdown for Laptops, fixed bug in the backend, where mapper was not able to handle a null teacher
+[33m616d8b9[m Implmented a landing Page with a display of open bookings and a search bar for students username, that when entered, opens a modal with the booking history
+[33m9786269[m Added a page for the Laptops and full CRUD with it
+[33m67d513d[m Added a component to show a students booking history and implemented it as a modal on the bookings page
+[33m4e00f34[m Added an endpoint to booking controller to search bookings by username, implemented it in the frontend service/interface
+[33m566ae81[m Added two endpoints to the bookings controller, implemented IBookingService and BookingService to the Frontend, first draft of bookings page
+[33ma7b7ba0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #4 from Joeschne/features/email-notifications
+[33m9e03fa9[m feat: added Bootstrap alerts for email notifications
+[33mfcaebfe[m refactor: updated oninput to enable automatic autocomplete functionality
+[33m6edca29[m feat: implemented functionality for the SendEmail function
+[33m1853d4c[m feat: added email configuration and implemented email sending endpoint
+[33m6d3efd2[m feat: created a new page for email notifications (UI only, no functionality yet)
+[33mdf18f7e[m Merge pull request #3 from Joeschne/features/backend
+[33mfbaf29f[m Completed refactoring of backend
+[33m49af01a[m First api/db adjustments regarding stakeholder input
+[33ma688272[m Update DTOs
+[33m000b332[m Merge pull request #1 from Joeschne/features/backend
+[33m3710c4e[m[33m ([m[1;32mfeatures/backend[m[33m, [m[1;32mFrontend[m[33m)[m Addition of search endpoint
+[33mfecc870[m Set up API and DB
+[33m9d614da[m Added Styling
+[33m9f3df9a[m Added home page and Loan Page for the Frontend, Added a controller for a proxy in the backend, created JS Interop, created StudentDTO, installed succesfull API Call to fetch student information and autofill them into the student loan form, installed cors policy
+[33m9b7b402[m Deleted old Web folder
+[33ma47e99e[m Add project structure
+[33m324fa3d[m Test commit WebAssembly
+[33m8c29f35[m Initial commit
