@@ -71,11 +71,11 @@
                             <div class="mb-3">
                                 <label for="email" class="form-label">Teacher Email</label>
                                 <input type="text"
-                                       id="email"
-                                       class="form-control"
-                                       placeholder="Enter teacher's email..."
-                                       @oninput="e => { searchTeacherEmail = e.Value.ToString(); GenerateEmailMessage(); SearchTeachers(); }"
-                                       list="teacherEmails" />
+                                id="email"
+                                class="form-control"
+                                placeholder="Enter teacher's email..."
+                                @oninput="e => { searchTeacherEmail = e.Value.ToString(); GenerateEmailMessage(); SearchTeachers(); }"
+                                list="teacherEmails" />
                                 <datalist id="teacherEmails">
                                     @foreach (var email in filteredEmails)
                                     {
@@ -89,9 +89,9 @@
                             <div class="mb-3">
                                 <label for="message" class="form-label">Message</label>
                                 <textarea id="message"
-                                          class="form-control"
-                                          rows="5"
-                                          @bind="emailMessage"></textarea>
+                                class="form-control"
+                                rows="5"
+                                @bind="emailMessage"></textarea>
                             </div>
 
                             <!-- Email Status Alert -->
@@ -259,12 +259,16 @@
             {
                 await Task.Delay(3000);
             }
+        } else
+        {
+            NewBooking.TeacherEmail = null;
         }
 
         try
         {
             if (OnSave.HasDelegate)
             {
+                NewBooking.TeacherEmail = searchTeacherEmail;
                 Console.WriteLine("Attempting to save booking...");
                 await OnSave.InvokeAsync(NewBooking);
                 Console.WriteLine("Booking saved successfully.");
