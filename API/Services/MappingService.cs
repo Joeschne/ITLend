@@ -151,8 +151,17 @@ public class MappingService
         {
             var teacher = await context.Teachers
                 .FirstOrDefaultAsync(t => t.Email.ToLower() == bookingDTO.TeacherEmail.ToLower());
+
             if (teacher == null)
-                throw new ArgumentException($"Invalid teacher: '{bookingDTO.TeacherEmail}' not found.");
+            {
+                teacher = new Teacher
+                {
+                    Email = bookingDTO.TeacherEmail
+                };
+
+                context.Teachers.Add(teacher);
+                await context.SaveChangesAsync(); // Must save so the teacher gets an ID
+            }
 
             teacherId = teacher.Id;
         }
