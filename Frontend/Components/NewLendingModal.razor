@@ -186,7 +186,6 @@
             emailMessage = "";
             return;
         }
-
         var firstName = searchTeacherEmail.Split('@')[0].Split('.')[0];
         emailMessage = $"Hallo {firstName},\n\n" +
                        $"Der Schüler mit dem Nutzernamen {NewBooking.StudentUsername} wird dir einen ausgeliehenen Laptop am Ende des Unterrichts abgeben.\n\n" +
@@ -259,12 +258,16 @@
             {
                 await Task.Delay(3000);
             }
+        } else
+        {
+            NewBooking.TeacherEmail = null;
         }
 
         try
         {
             if (OnSave.HasDelegate)
             {
+                NewBooking.TeacherEmail = searchTeacherEmail;
                 Console.WriteLine("Attempting to save booking...");
                 await OnSave.InvokeAsync(NewBooking);
                 Console.WriteLine("Booking saved successfully.");

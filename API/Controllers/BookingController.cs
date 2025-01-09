@@ -184,6 +184,11 @@ public class BookingController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
+        if (!String.IsNullOrEmpty(bookingDTO.TeacherEmail))
+        {
+
+        }
+
         Booking? createdBooking = await _context.Bookings
             .Include(b => b.Student)
             .Include(b => b.Laptop)
