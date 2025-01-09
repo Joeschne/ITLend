@@ -78,39 +78,45 @@
                         <h5 class="modal-title">@modalTitle</h5>
                         <button type="button" class="btn-close" @onclick="CloseAddEditModal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <!-- Model -->
-                        <div class="mb-3">
-                            <label class="form-label">Model</label>
-                            <input type="text" class="form-control" @bind="selectedLaptop.Model" />
-                        </div>
+                    <EditForm Model="@selectedLaptop" OnValidSubmit="SaveLaptop">
+                        <DataAnnotationsValidator />
+                        <div class="modal-body">
+                            <!-- Model -->
+                            <div class="mb-3">
+                                <label class="form-label">Model</label>
+                                <InputText type="text" class="form-control" @bind-Value="selectedLaptop.Model" />
+                                <ValidationMessage For="@(() => selectedLaptop.Model)" />
+                            </div>
 
-                        <!-- Identification Number -->
-                        <div class="mb-3">
-                            <label class="form-label">Identification Number</label>
-                            <input type="text" class="form-control" @bind="selectedLaptop.IdentificationNumber" />
-                        </div>
+                            <!-- Identification Number -->
+                            <div class="mb-3">
+                                <label class="form-label">Identification Number</label>
+                                <InputText type="text" class="form-control" @bind-Value="selectedLaptop.IdentificationNumber" />
+                                <ValidationMessage For="@(() => selectedLaptop.IdentificationNumber)" />
+                            </div>
 
-                        <!-- Availability -->
-                        <div class="mb-3">
-                            <input type="checkbox" class="form-check-input" id="isAvailableCheck" @bind="selectedLaptop.IsAvailable" />
-                            <label class="form-check-label ms-2" for="isAvailableCheck">Is Available</label>
-                        </div>
+                            <!-- Availability -->
+                            <div class="mb-3">
+                                <input type="checkbox" class="form-check-input" id="isAvailableCheck" @bind="selectedLaptop.IsAvailable" />
+                                <label class="form-check-label ms-2" for="isAvailableCheck">Is Available</label>
+                            </div>
 
-                        <!-- Damage Description -->
-                        <div class="mb-3">
-                            <label class="form-label">Damage Description</label>
-                            <textarea class="form-control" rows="3" @bind="selectedLaptop.DamageDescription"></textarea>
+                            <!-- Damage Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Damage Description</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="selectedLaptop.DamageDescription" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        @if (!isAddMode)
-                        {
-                            <button class="btn btn-danger" @onclick="DeleteLaptop">Delete</button>
-                        }
-                        <button class="btn btn-secondary" @onclick="CloseAddEditModal">Close</button>
-                        <button class="btn btn-primary" @onclick="SaveLaptop">Save</button>
-                    </div>
+                    
+                        <div class="modal-footer">
+                            @if (!isAddMode)
+                            {
+                                <button class="btn btn-danger" @onclick="DeleteLaptop">Delete</button>
+                            }
+                            <button class="btn btn-secondary" @onclick="CloseAddEditModal">Close</button>
+                            <button class="btn btn-primary" type="submit">Save</button>
+                        </div>
+                    </EditForm>
                 </div>
             </div>
         </div>
