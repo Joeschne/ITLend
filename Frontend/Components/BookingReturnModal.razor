@@ -1,0 +1,69 @@
+﻿@using Shared.DTOs
+@inject IJSRuntime JSRuntime
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Return Booking from @Booking.StudentUsername</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Input field for the return comment -->
+                    <label for="returnComment" class="form-label">Comment</label>
+                    <textarea id="returnComment" class="form-control" rows="5" @bind="Booking.Comment"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    <button type="button" class="btn btn-primary" @onclick="ReturnBooking">Return</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Indicates whether the modal is visible.
+    /// </summary>
+    [Parameter] public bool IsVisible { get; set; }
+
+    /// <summary>
+    /// The booking being returned.
+    /// </summary>
+    [Parameter] public BookingResponseDTO Booking { get; set; }
+
+    /// <summary>
+    /// Event callback triggered when the modal is closed.
+    /// </summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Event callback triggered when the booking is returned.
+    /// </summary>
+    [Parameter] public EventCallback<BookingResponseDTO> OnReturn { get; set; }
+
+    /// <summary>
+    /// Closes the modal by invoking the <see cref="OnClose"/> callback.
+    /// </summary>
+    private void CloseModal()
+    {
+        if (OnClose.HasDelegate)
+        {
+            OnClose.InvokeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Returns the booking by invoking the <see cref="OnReturn"/> callback.
+    /// </summary>
+    private async Task ReturnBooking()
+    {
+        if (OnReturn.HasDelegate)
+        {
+            await OnReturn.InvokeAsync(Booking);
+        }
+    }
+}

@@ -22,6 +22,9 @@ public class Program
             });
         });
 
+        builder.Services.AddScoped<IEmailService, EmailService>();
+
+
         // Add services to the container.
         string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ITLendDBContext>(options =>

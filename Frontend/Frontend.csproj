@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\IStudentDetailService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Layout\gibz.webp" />
   </ItemGroup>
 

@@ -1,0 +1,133 @@
+﻿@page "/laptops"
+@using Frontend.Components
+@using Shared.DTOs
+
+<div class="container mt-4">
+
+    <!-- Header Section -->
+    <div class="mb-2 d-flex flex-row">
+        <h1>Laptops</h1>
+        <div class="ms-auto mt-3">
+            <strong>Available Laptops:</strong> @availableLaptops
+        </div>
+    </div>
+
+    <!-- Add Laptop Button -->
+    <button class="btn btn-primary mb-3" @onclick="() => OpenAddEditModal(new LaptopDTO(), true)">
+        Add Laptop
+    </button>
+
+    <!-- List of Laptops -->
+    @if (laptops == null)
+    {
+        <div class="alert alert-info">Loading laptops...</div>
+    }
+    else if (!laptops.Any())
+    {
+        <div class="alert alert-warning">No laptops available.</div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var laptop in laptops)
+            {
+                <li class="list-group-item mb-2 position-relative">
+                    <div class="row" @onclick="() => OpenBookingsModal(laptop)">
+
+                        <!-- Availability Badge -->
+                        <div class="col-lg-1 ms-0 ps-0">
+                            <span class="badge text-white small px-1 py-1 ms-0 @(laptop.IsAvailable ? "bg-success" : "bg-danger")" style="font-size: 0.75rem;">
+                                @(laptop.IsAvailable ? "Available" : "Lent")
+                            </span>
+                        </div>
+
+                        <!-- Model -->
+                        <div class="col-lg-3">
+                            <strong>Model:</strong> @laptop.Model
+                        </div>
+
+                        <!-- Identification Number -->
+                        <div class="col-lg-3">
+                            <strong>Id-Number:</strong> @laptop.IdentificationNumber
+                        </div>
+
+                        <!-- Damage Description -->
+                        <div class="col-lg-4">
+                            <strong>Damage:</strong> @(string.IsNullOrEmpty(laptop.DamageDescription) ? "No damage recorded" : laptop.DamageDescription)
+                        </div>
+
+                        <!-- Edit Button -->
+                        <div class="col-lg-1 text-end">
+                            <button class="btn btn-warning btn-sm" @onclick:stopPropagation @onclick="() => OpenAddEditModal(laptop, false)">Edit</button>
+                        </div>
+
+
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    <!-- Add/Edit Laptop Modal -->
+    @if (showAddEditModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@modalTitle</h5>
+                        <button type="button" class="btn-close" @onclick="CloseAddEditModal" aria-label="Close"></button>
+                    </div>
+                    <EditForm Model="@selectedLaptop" OnValidSubmit="SaveLaptop">
+                        <DataAnnotationsValidator />
+                        <div class="modal-body">
+                            <!-- Model -->
+                            <div class="mb-3">
+                                <label class="form-label">Model</label>
+                                <InputText type="text" class="form-control" @bind-Value="selectedLaptop.Model" />
+                                <ValidationMessage For="@(() => selectedLaptop.Model)" />
+                            </div>
+
+                            <!-- Identification Number -->
+                            <div class="mb-3">
+                                <label class="form-label">Identification Number</label>
+                                <InputText type="text" class="form-control" @bind-Value="selectedLaptop.IdentificationNumber" />
+                                <ValidationMessage For="@(() => selectedLaptop.IdentificationNumber)" />
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="mb-3">
+                                <input type="checkbox" class="form-check-input" id="isAvailableCheck" @bind="selectedLaptop.IsAvailable" />
+                                <label class="form-check-label ms-2" for="isAvailableCheck">Is Available</label>
+                            </div>
+
+                            <!-- Damage Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Damage Description</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="selectedLaptop.DamageDescription" />
+                            </div>
+                        </div>
+                    
+                        <div class="modal-footer">
+                            @if (!isAddMode)
+                            {
+                                <button class="btn btn-danger" @onclick="DeleteLaptop">Delete</button>
+                            }
+                            <button class="btn btn-secondary" @onclick="CloseAddEditModal">Close</button>
+                            <button class="btn btn-primary" type="submit">Save</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Laptop Bookings Modal -->
+    @if (showBookingsModal)
+    {
+        <LaptopBookingsModal IsVisible="@showBookingsModal"
+                             Laptop="@selectedLaptop"
+                             Bookings="@selectedLaptopBookings"
+                             OnClose="CloseBookingsModal" />
+    }
+</div>

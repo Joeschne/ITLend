@@ -1,0 +1,135 @@
+@page "/bookings"
+@using Frontend.Components
+
+<div class="container mt-4">
+    <h1 class="mb-4">Bookings</h1>
+
+    <!-- Search Input -->
+    <div class="mb-4">
+        <input type="text"
+               class="form-control"
+               placeholder="Search by username..."
+               @oninput="e => { searchQuery = e.Value.ToString(); FilterBookings(); }" />
+    </div>
+
+    @if (filteredBookings == null)
+    {
+        <div class="alert alert-info">
+            <span>Loading bookings...</span>
+        </div>
+    }
+    else if (!filteredBookings.Any())
+    {
+        <div class="alert alert-warning">
+            <span>No bookings found.</span>
+        </div>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var booking in PaginatedBookings)
+            {
+                <li class="list-group-item mb-2">
+                    <div class="row">
+                        <!-- Student Username (clickable) -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Student:</strong>
+                            <a href="javascript:void(0)"
+                               @onclick="() => OpenStudentModal(booking.StudentUsername)"
+                               class="text-decoration-none">
+                                @booking.StudentUsername
+                            </a>
+                        </div>
+
+                        <!-- Laptop IdentificationNumber -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Laptop Number:</strong>
+                            <a href="javascript:void(0)"
+                               @onclick="() => OpenLaptopModal(booking.Laptop)">
+                                @booking.Laptop?.IdentificationNumber
+                            </a>
+                        </div>
+
+                        <!-- Teacher Email -->
+                        <div class="col-md-3 mb-2">
+                            @if (!String.IsNullOrEmpty(booking.TeacherEmail))
+                            {
+                                <strong>Returned by Teacher:</strong>
+                            }
+                            @booking.TeacherEmail
+                        </div>
+
+                        <!-- Returned -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Returned:</strong>
+                            <span class='@(booking.Returned ? "text-success" : "text-danger")'>@(booking.Returned ? "Yes" : "No")</span>
+                        </div>
+
+                        <!-- Booking DateTime -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Booking DateTime:</strong>
+                            @booking.BookingDateTime.ToString("g")
+                        </div>
+
+                        <!-- Planned Return -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Planned Return:</strong>
+                            @booking.PlannedReturn.ToString("g")
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="col-md-3 mb-2">
+                            <strong>Comment:</strong>
+                            @booking.Comment
+                        </div>
+
+                        <!-- Edit Button -->
+                        <div class="col-md-3 text-end">
+                            <button class="btn btn-primary" @onclick="() => EditBooking(booking)">
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                </li>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var pageNumber = i;
+                    <!-- Create a local copy -->
+                    <li class="page-item @(currentPage == i ? "active" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+                    </li>
+                }
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="NextPage">Next</button>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+<!-- Student Bookings Modal -->
+<StudentBookingsModal IsVisible="@showStudentModal"
+                      StudentDetail="@selectedStudentDetail"
+                      OnClose="CloseStudentModal" />
+
+<!-- Laptop Modal -->
+<LaptopBookingsModal IsVisible="@showLaptopModal"
+                     Laptop="@selectedLaptop"
+                     Bookings="@selectedLaptopBookings"
+                     OnClose="CloseLaptopModal" />
+
+<!-- Booking Edit Modal -->
+<BookingEditModal IsVisible="@showEditModal"
+                  Booking="@selectedBooking"
+                  OnClose="CloseEditModal"
+                  OnDelete="DeleteBooking"
+                  OnSave="SaveBookingChanges" />

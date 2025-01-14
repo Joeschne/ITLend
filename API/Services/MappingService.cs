@@ -113,7 +113,7 @@ public class MappingService
             Id = booking.Id,
             StudentUsername = booking.Student.Username,
             Laptop = MapToLaptopDTO(booking.Laptop),
-            TeacherEmail = booking.Teacher.Email,
+            TeacherEmail = booking.Teacher?.Email,
             Returned = booking.Returned,
             BookingDateTime = booking.BookingDateTime,
             PlannedReturn = booking.PlannedReturn,
@@ -145,16 +145,30 @@ public class MappingService
 
         if (laptopId == null) throw new ArgumentException($"Invalid laptop: '{bookingDTO.LaptopIdentificationNumber}' not found.");
 
-        int? teacherId = await context.Teachers
-            .Where(t => t.Email.ToLower() == bookingDTO.TeacherEmail.ToLower())
-            .Select(t => t.Id)
-            .FirstOrDefaultAsync();
+        // Check if Teacher exists (if provided)
+        int? teacherId = null;
+        if (!string.IsNullOrWhiteSpace(bookingDTO.TeacherEmail))
+        {
+            var teacher = await context.Teachers
+                .FirstOrDefaultAsync(t => t.Email.ToLower() == bookingDTO.TeacherEmail.ToLower());
 
-        if (teacherId == null) throw new ArgumentException($"Invalid teacher: '{bookingDTO.TeacherEmail}' not found.");
+            if (teacher == null)
+            {
+                teacher = new Teacher
+                {
+                    Email = bookingDTO.TeacherEmail
+                };
+
+                context.Teachers.Add(teacher);
+                await context.SaveChangesAsync(); // Must save so the teacher gets an ID
+            }
+
+            teacherId = teacher.Id;
+        }
 
         booking.StudentId = studentId.Value;
         booking.LaptopId = laptopId.Value;
-        booking.TeacherId = teacherId.Value;
+        booking.TeacherId = teacherId;
         booking.Returned = bookingDTO.Returned;
         booking.BookingDateTime = bookingDTO.BookingDateTime;
         booking.PlannedReturn = bookingDTO.PlannedReturn;
